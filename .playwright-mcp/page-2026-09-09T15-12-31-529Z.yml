@@ -1,0 +1,56 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e6]:
+    - generic [ref=f13e7]: Atenção Operador
+    - generic [ref=f13e8]: Você não está autenticado. Os dados exigem login no painel.
+  - banner [ref=f13e9]:
+    - link "Painel" [ref=f13e10] [cursor=pointer]:
+      - /url: index.html
+    - heading "Cadastrar Peça" [level=1] [ref=f13e13]
+    - generic [ref=f13e14]: Mobile
+  - main [ref=f13e16]:
+    - generic [ref=f13e21]:
+      - heading "Entrada Rápida na Bancada" [level=2] [ref=f13e22]
+      - paragraph [ref=f13e23]: Cadastre novas peças direto pelo smartphone com atalhos de categoria e montadora.
+    - generic [ref=f13e24]:
+      - generic [ref=f13e25]:
+        - generic [ref=f13e26]:
+          - generic [ref=f13e27]: Código da Peça / Part Number *
+          - generic [ref=f13e28]: "Ex: FL-0144"
+        - 'textbox "Código da Peça / Part Number * Ex: FL-0144" [ref=f13e30]':
+          - /placeholder: DIGITE O CÓDIGO
+        - generic "Prefixos comuns" [ref=f13e31]:
+          - button "FL- Filtro" [ref=f13e32] [cursor=pointer]
+          - button "PF- Pastilha" [ref=f13e33] [cursor=pointer]
+          - button "VI- Vela" [ref=f13e34] [cursor=pointer]
+          - button "CD- Correia" [ref=f13e35] [cursor=pointer]
+          - button "AM- Amortecedor" [ref=f13e36] [cursor=pointer]
+          - button "DF- Disco" [ref=f13e37] [cursor=pointer]
+          - button "BP- Bomba" [ref=f13e38] [cursor=pointer]
+          - button "BL- Bieleta" [ref=f13e39] [cursor=pointer]
+      - generic [ref=f13e40]:
+        - generic [ref=f13e41]:
+          - generic [ref=f13e42]: Descrição e Aplicação Veicular *
+          - generic [ref=f13e43]: Marca / Modelo
+        - textbox "Descrição e Aplicação Veicular * Marca / Modelo" [ref=f13e44]:
+          - /placeholder: "Ex: Jogo Pastilhas Freio Dianteiro Bosch Cerâmica (HB20 / Creta)"
+        - generic "Atalhos de descrição" [ref=f13e45]:
+          - button "GM" [ref=f13e46] [cursor=pointer]
+          - button "Fiat" [ref=f13e47] [cursor=pointer]
+          - button "VW" [ref=f13e48] [cursor=pointer]
+          - button "Ford" [ref=f13e49] [cursor=pointer]
+          - button "Hyundai" [ref=f13e50] [cursor=pointer]
+          - button "Honda" [ref=f13e51] [cursor=pointer]
+          - button "Toyota" [ref=f13e52] [cursor=pointer]
+          - button "Bosch" [ref=f13e53] [cursor=pointer]
+      - generic [ref=f13e54]:
+        - generic [ref=f13e55]:
+          - generic [ref=f13e56]: Quantidade Inicial
+          - generic [ref=f13e57]: Definida compulsoriamente como zero
+        - generic [ref=f13e58]: 0 un.
+    - generic [ref=f13e59]:
+      - generic [ref=f13e60]:
+        - generic [ref=f13e61]: Últimas Peças Cadastradas
+        - generic [ref=f13e62]: 0 itens
+      - generic [ref=f13e63]: Nenhuma peça cadastrada nesta sessão.
+  - contentinfo [ref=f13e65]:
+    - button "Salvar Peça no Almoxarifado" [ref=f13e66] [cursor=pointer]

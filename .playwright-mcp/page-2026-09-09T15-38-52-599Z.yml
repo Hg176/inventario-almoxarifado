@@ -1,0 +1,40 @@
+- generic [ref=f23e2]:
+  - banner [ref=f23e3]:
+    - generic [ref=f23e4]:
+      - generic [ref=f23e11]:
+        - heading "Almoxarifado Pontual" [level=1] [ref=f23e12]
+        - generic [ref=f23e13]: Controle de Peças & Estoque Automotivo
+      - generic [ref=f23e14]:
+        - generic "Sincronização em tempo real ativa com o Supabase" [ref=f23e15]: Realtime Conectado
+        - generic [ref=f23e18]: mecanico@oficina.com
+        - button "Configurações do Supabase" [ref=f23e24] [cursor=pointer]
+        - button "Sair" [ref=f23e28] [cursor=pointer]
+  - main [ref=f23e32]:
+    - region "Estatísticas do Almoxarifado" [ref=f23e33]:
+      - generic [ref=f23e35]:
+        - heading "Tipos de Peças" [level=3] [ref=f23e36]
+        - generic [ref=f23e37]: "0"
+      - generic [ref=f23e42]:
+        - heading "Peças Físicas em Estoque" [level=3] [ref=f23e43]
+        - generic [ref=f23e44]: "0"
+      - generic [ref=f23e49]:
+        - heading "Itens com Estoque Zerado" [level=3] [ref=f23e50]
+        - generic [ref=f23e51]: "0"
+    - generic [ref=f23e55]:
+      - generic [ref=f23e56]:
+        - textbox "Buscar por código ou descrição da peça..." [ref=f23e61]
+        - generic [ref=f23e62]:
+          - combobox [ref=f23e63]:
+            - option "Todos os Níveis" [selected]
+            - option "Estoque Normal (> 5)"
+            - option "Estoque Baixo (1 - 5)"
+            - option "Estoque Zerado (0)"
+          - button "Cadastrar Nova Peça" [ref=f23e64] [cursor=pointer]
+      - table [ref=f23e67]:
+        - rowgroup [ref=f23e68]:
+          - row [ref=f23e69]:
+            - columnheader "Código" [ref=f23e70]
+            - columnheader "Descrição da Peça" [ref=f23e71]
+            - columnheader "Quantidade Atual" [ref=f23e72]
+            - columnheader "Ações" [ref=f23e73]
+        - rowgroup

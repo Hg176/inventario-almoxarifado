@@ -1,0 +1,20 @@
+- main [ref=f12e2]:
+  - generic [ref=f12e3]:
+    - generic [ref=f12e4]:
+      - generic [ref=f12e5]: Oficina Mecânica & Almoxarifado
+      - heading "Acesso do Operador" [level=1] [ref=f12e8]
+      - paragraph [ref=f12e9]: Entre com suas credenciais para acessar o inventário de peças
+    - generic [ref=f12e10]:
+      - generic [ref=f12e11]:
+        - generic [ref=f12e12]: E-mail Corporativo
+        - textbox "E-mail Corporativo" [ref=f12e13]:
+          - /placeholder: mecanico@oficina.com
+      - generic [ref=f12e14]:
+        - generic [ref=f12e15]: Senha de Acesso
+        - textbox "Senha de Acesso" [ref=f12e16]:
+          - /placeholder: ••••••••
+      - button "Entrar no Almoxarifado" [ref=f12e17] [cursor=pointer]
+      - button "Cadastrar Novo Operador" [ref=f12e21] [cursor=pointer]
+    - generic [ref=f12e25]:
+      - generic [ref=f12e26]: Conexão do Banco Supabase
+      - button "Configurar Chaves" [ref=f12e27] [cursor=pointer]

@@ -1,0 +1,10 @@
+[      91ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  115074ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/pecas?select=id%2Ccodigo%2Cdescricao%2Cquantidade%2Ccreated_at%2Cupdated_at&order=descricao.asc:0
+[  115075ms] [ERROR] [Supabase DB Error]: {code: 42703, details: null, hint: Perhaps you meant to reference the column "pecas.created_at"., message: column pecas.updated_at does not exist} @ http://localhost:3333/js/api.js:23
+[  115077ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  115843ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274
+[  182998ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  183186ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274
+[  261891ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T15:27:11.145Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:267
+[  615336ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  615555ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274

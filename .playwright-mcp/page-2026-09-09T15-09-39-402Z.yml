@@ -1,0 +1,144 @@
+- generic [ref=f12e1]:
+  - generic [ref=f12e28]:
+    - banner [ref=f12e29]:
+      - generic [ref=f12e30]:
+        - generic [ref=f12e37]:
+          - heading "Almoxarifado Pontual" [level=1] [ref=f12e38]
+          - generic [ref=f12e39]: Controle de Peças & Estoque Automotivo
+        - generic [ref=f12e40]:
+          - generic "Sincronização em tempo real ativa com o Supabase" [ref=f12e41]: Realtime Conectado
+          - generic [ref=f12e44]: mecanico.chefe@oficina.com
+          - button "Configurações do Supabase" [ref=f12e50] [cursor=pointer]
+          - button "Sair" [ref=f12e54] [cursor=pointer]
+    - main [ref=f12e58]:
+      - region "Estatísticas do Almoxarifado" [ref=f12e59]:
+        - generic [ref=f12e61]:
+          - heading "Tipos de Peças" [level=3] [ref=f12e62]
+          - generic [ref=f12e63]: "6"
+        - generic [ref=f12e68]:
+          - heading "Peças Físicas em Estoque" [level=3] [ref=f12e69]
+          - generic [ref=f12e70]: "57"
+        - generic [ref=f12e75]:
+          - heading "Itens com Estoque Zerado" [level=3] [ref=f12e76]
+          - generic [ref=f12e77]: "1"
+      - generic [ref=f12e81]:
+        - generic [ref=f12e82]:
+          - textbox "Buscar por código ou descrição da peça..." [ref=f12e87]
+          - generic [ref=f12e88]:
+            - combobox [ref=f12e89]:
+              - option "Todos os Níveis" [selected]
+              - option "Estoque Normal (> 5)"
+              - option "Estoque Baixo (1 - 5)"
+              - option "Estoque Zerado (0)"
+            - button "Cadastrar Nova Peça" [ref=f12e90] [cursor=pointer]
+        - table [ref=f12e93]:
+          - rowgroup [ref=f12e94]:
+            - row [ref=f12e95]:
+              - columnheader "Código" [ref=f12e96]
+              - columnheader "Descrição da Peça" [ref=f12e97]
+              - columnheader "Quantidade Atual" [ref=f12e98]
+              - columnheader "Ações" [ref=f12e99]
+          - rowgroup [ref=f12e100]:
+            - row [ref=f12e101]:
+              - cell "FL-0144" [ref=f12e102]
+              - cell "Filtro de Óleo Fram PH5949 (Linha GM/Fiat 1.0-1.8)" [ref=f12e104]
+              - cell "24 un." [ref=f12e106]:
+                - generic [ref=f12e107]:
+                  - generic [ref=f12e108]: "24"
+                  - text: un.
+              - cell [ref=f12e109]:
+                - generic [ref=f12e110]:
+                  - button "Entrada" [ref=f12e111] [cursor=pointer]
+                  - button "Baixa" [ref=f12e113] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e115] [cursor=pointer]
+            - row [ref=f12e118]:
+              - cell "PF-2088" [ref=f12e119]
+              - cell "Jogo Pastilhas Freio Dianteiro Bosch Cerâmica (HB20 / Creta)" [ref=f12e121]
+              - cell "12 un." [ref=f12e123]:
+                - generic [ref=f12e124]:
+                  - generic [ref=f12e125]: "12"
+                  - text: un.
+              - cell [ref=f12e126]:
+                - generic [ref=f12e127]:
+                  - button "Entrada" [ref=f12e128] [cursor=pointer]
+                  - button "Baixa" [ref=f12e130] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e132] [cursor=pointer]
+            - row [ref=f12e135]:
+              - cell "VI-3012" [ref=f12e136]
+              - cell "Jogo de Velas de Ignição NGK Laser Iridium (Civic / Corolla)" [ref=f12e138]
+              - cell "4 un." [ref=f12e140]:
+                - generic [ref=f12e141]:
+                  - generic [ref=f12e142]: "4"
+                  - text: un.
+              - cell [ref=f12e143]:
+                - generic [ref=f12e144]:
+                  - button "Entrada" [ref=f12e145] [cursor=pointer]
+                  - button "Baixa" [ref=f12e147] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e149] [cursor=pointer]
+            - row [ref=f12e152]:
+              - cell "CD-5501" [ref=f12e153]
+              - cell "Correia Dentada Continental Contitech CT1044 (VW Gol/Fox)" [ref=f12e155]
+              - cell "15 un." [ref=f12e157]:
+                - generic [ref=f12e158]:
+                  - generic [ref=f12e159]: "15"
+                  - text: un.
+              - cell [ref=f12e160]:
+                - generic [ref=f12e161]:
+                  - button "Entrada" [ref=f12e162] [cursor=pointer]
+                  - button "Baixa" [ref=f12e164] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e166] [cursor=pointer]
+            - row [ref=f12e169]:
+              - cell "AM-9020" [ref=f12e170]
+              - cell "Amortecedor Dianteiro Pressurizado Monroe OESpectrum (Renegade)" [ref=f12e172]
+              - cell "2 un." [ref=f12e174]:
+                - generic [ref=f12e175]:
+                  - generic [ref=f12e176]: "2"
+                  - text: un.
+              - cell [ref=f12e177]:
+                - generic [ref=f12e178]:
+                  - button "Entrada" [ref=f12e179] [cursor=pointer]
+                  - button "Baixa" [ref=f12e181] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e183] [cursor=pointer]
+            - row [ref=f12e186]:
+              - cell "FA-8812" [ref=f12e187]
+              - cell "Filtro de Ar do Motor Mahle LX3418 (Compass 2.0 Flex)" [ref=f12e189]
+              - cell "0 un." [ref=f12e191]:
+                - generic [ref=f12e192]:
+                  - generic [ref=f12e193]: "0"
+                  - text: un.
+              - cell [ref=f12e194]:
+                - generic [ref=f12e195]:
+                  - button "Entrada" [ref=f12e196] [cursor=pointer]
+                  - button "Baixa" [ref=f12e198] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f12e200] [cursor=pointer]
+  - dialog [ref=f12e203]:
+    - generic [ref=f12e204]:
+      - generic [ref=f12e205]:
+        - heading "▲ Dar Entrada de Estoque" [level=3] [ref=f12e206]
+        - button "Fechar modal" [ref=f12e208] [cursor=pointer]
+      - generic [ref=f12e212]:
+        - generic [ref=f12e213]:
+          - generic [ref=f12e214]:
+            - generic [ref=f12e215]: Peça Selecionada
+            - generic [ref=f12e216]: Filtro de Óleo Fram PH5949 (Linha GM/Fiat 1.0-1.8)
+            - generic [ref=f12e217]:
+              - generic [ref=f12e218]:
+                - text: "Código:"
+                - strong [ref=f12e219]: FL-0144
+              - generic [ref=f12e220]:
+                - text: "Estoque Atual:"
+                - strong [ref=f12e221]: 24 un.
+          - generic [ref=f12e222]:
+            - generic [ref=f12e223]: Quantidade para a Operação
+            - spinbutton "Quantidade para a Operação" [active] [ref=f12e224]: "1"
+            - generic [ref=f12e225]:
+              - button "+1" [ref=f12e226] [cursor=pointer]
+              - button "+5" [ref=f12e227] [cursor=pointer]
+              - button "+10" [ref=f12e228] [cursor=pointer]
+              - button "+20" [ref=f12e229] [cursor=pointer]
+          - generic [ref=f12e230]:
+            - generic [ref=f12e231]: "Saldo Físico Previsto:"
+            - generic [ref=f12e232]: 25 un.
+        - generic [ref=f12e233]:
+          - button "Cancelar" [ref=f12e234] [cursor=pointer]
+          - button "Confirmar Entrada" [ref=f12e235] [cursor=pointer]

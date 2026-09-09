@@ -1,0 +1,47 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e6]:
+    - generic [ref=f1e7]: Configuração Inicial Necessária
+    - generic [ref=f1e8]: Insira o Project URL e a Anon Key do seu projeto Supabase para iniciar.
+  - main [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - generic [ref=f1e11]:
+        - generic [ref=f1e12]: Oficina Mecânica & Almoxarifado
+        - heading "Acesso do Operador" [level=1] [ref=f1e15]
+        - paragraph [ref=f1e16]: Entre com suas credenciais para acessar o inventário de peças
+      - generic [ref=f1e17]:
+        - generic [ref=f1e18]:
+          - generic [ref=f1e19]: E-mail Corporativo
+          - textbox "E-mail Corporativo" [ref=f1e20]:
+            - /placeholder: mecanico@oficina.com
+        - generic [ref=f1e21]:
+          - generic [ref=f1e22]: Senha de Acesso
+          - textbox "Senha de Acesso" [ref=f1e23]:
+            - /placeholder: ••••••••
+        - button "Entrar no Almoxarifado" [ref=f1e24] [cursor=pointer]
+      - generic [ref=f1e28]:
+        - generic [ref=f1e29]: Conexão do Banco Supabase
+        - button "Configurar Chaves" [ref=f1e30] [cursor=pointer]
+  - dialog [ref=f1e31]:
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - heading "Configurações da Conexão Supabase" [level=3] [ref=f1e34]
+        - button "Fechar modal" [ref=f1e38] [cursor=pointer]
+      - generic [ref=f1e42]:
+        - generic [ref=f1e43]:
+          - paragraph [ref=f1e44]: Insira os dados do seu projeto Supabase (Project Settings → API). Os dados serão salvos com segurança no navegador.
+          - generic [ref=f1e45]:
+            - generic [ref=f1e46]: Project URL
+            - textbox "Project URL" [ref=f1e47]:
+              - /placeholder: https://exemplo.supabase.co
+          - generic [ref=f1e48]:
+            - generic [ref=f1e49]: Anon / Public API Key
+            - textbox "Anon / Public API Key" [ref=f1e50]:
+              - /placeholder: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          - generic [ref=f1e51]:
+            - strong [ref=f1e52]: "Dica de Implantação:"
+            - text: Execute o arquivo
+            - code [ref=f1e53]: schema.sql
+            - text: incluído no projeto dentro do SQL Editor do seu Supabase para criar a tabela, RLS, Realtime e as regras de estoque.
+        - generic [ref=f1e54]:
+          - button "Cancelar" [ref=f1e55] [cursor=pointer]
+          - button "Salvar Conexão" [ref=f1e56] [cursor=pointer]

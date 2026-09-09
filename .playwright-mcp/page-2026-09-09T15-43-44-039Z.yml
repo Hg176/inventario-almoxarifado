@@ -1,0 +1,104 @@
+- generic [active] [ref=f23e1]:
+  - generic [ref=f23e202]:
+    - generic [ref=f23e203]: Peça Cadastrada no Almoxarifado
+    - generic [ref=f23e204]: FCB-99 adicionada com estoque inicial de 10 un.
+  - generic [ref=f23e2]:
+    - banner [ref=f23e3]:
+      - generic [ref=f23e4]:
+        - generic [ref=f23e11]:
+          - heading "Almoxarifado Pontual" [level=1] [ref=f23e12]
+          - generic [ref=f23e13]: Controle de Peças & Estoque Automotivo
+        - generic [ref=f23e14]:
+          - generic "Sincronização em tempo real ativa com o Supabase" [ref=f23e15]: Realtime Conectado
+          - generic [ref=f23e18]: mecanico@oficina.com
+          - button "Configurações do Supabase" [ref=f23e24] [cursor=pointer]
+          - button "Sair" [ref=f23e28] [cursor=pointer]
+    - main [ref=f23e32]:
+      - region "Estatísticas do Almoxarifado" [ref=f23e33]:
+        - generic [ref=f23e35]:
+          - heading "Tipos de Peças" [level=3] [ref=f23e36]
+          - generic [ref=f23e37]: "5"
+        - generic [ref=f23e42]:
+          - heading "Peças Físicas em Estoque" [level=3] [ref=f23e43]
+          - generic [ref=f23e44]: "44"
+        - generic [ref=f23e49]:
+          - heading "Itens com Estoque Zerado" [level=3] [ref=f23e50]
+          - generic [ref=f23e51]: "1"
+      - generic [ref=f23e55]:
+        - generic [ref=f23e56]:
+          - textbox "Buscar por código ou descrição da peça..." [ref=f23e61]
+          - generic [ref=f23e62]:
+            - combobox [ref=f23e63]:
+              - option "Todos os Níveis" [selected]
+              - option "Estoque Normal (> 5)"
+              - option "Estoque Baixo (1 - 5)"
+              - option "Estoque Zerado (0)"
+            - button "Cadastrar Nova Peça" [ref=f23e64] [cursor=pointer]
+        - table [ref=f23e67]:
+          - rowgroup [ref=f23e68]:
+            - row [ref=f23e69]:
+              - columnheader "Código" [ref=f23e70]
+              - columnheader "Descrição da Peça" [ref=f23e71]
+              - columnheader "Quantidade Atual" [ref=f23e72]
+              - columnheader "Ações" [ref=f23e73]
+          - rowgroup [ref=f23e74]:
+            - row [ref=f23e205]:
+              - cell "FCB-99" [ref=f23e206]
+              - cell "FILTRO DE COMBUSTIVEL BOSCH - FIAT PALIO/STRADA" [ref=f23e208]
+              - cell "10 un." [ref=f23e210]:
+                - generic [ref=f23e211]:
+                  - generic [ref=f23e212]: "10"
+                  - text: un.
+              - cell [ref=f23e213]:
+                - generic [ref=f23e214]:
+                  - button "Entrada" [ref=f23e215] [cursor=pointer]
+                  - button "Baixa" [ref=f23e217] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f23e219] [cursor=pointer]
+            - row [ref=f23e75]:
+              - cell "FILTRO-01" [ref=f23e76]
+              - cell "FILTRO DE ÓLEO MOTOR AP" [ref=f23e78]
+              - cell "15 un." [ref=f23e80]:
+                - generic [ref=f23e81]:
+                  - generic [ref=f23e82]: "15"
+                  - text: un.
+              - cell [ref=f23e83]:
+                - generic [ref=f23e84]:
+                  - button "Entrada" [ref=f23e85] [cursor=pointer]
+                  - button "Baixa" [ref=f23e87] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f23e89] [cursor=pointer]
+            - row [ref=f23e92]:
+              - cell "PAST-02" [ref=f23e93]
+              - cell "JOGO DE PASTILHAS DE FREIO DIANTEIRO" [ref=f23e95]
+              - cell "8 un." [ref=f23e97]:
+                - generic [ref=f23e98]:
+                  - generic [ref=f23e99]: "8"
+                  - text: un.
+              - cell [ref=f23e100]:
+                - generic [ref=f23e101]:
+                  - button "Entrada" [ref=f23e102] [cursor=pointer]
+                  - button "Baixa" [ref=f23e104] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f23e106] [cursor=pointer]
+            - row [ref=f23e109]:
+              - cell "MB45" [ref=f23e110]
+              - cell "LINHA GM / CHEVROLET (LINHA FIAT 1.0/1.4) (LINHA VW GOL/FOX)" [ref=f23e112]
+              - cell "0 un." [ref=f23e114]:
+                - generic [ref=f23e115]:
+                  - generic [ref=f23e116]: "0"
+                  - text: un.
+              - cell [ref=f23e117]:
+                - generic [ref=f23e118]:
+                  - button "Entrada" [ref=f23e119] [cursor=pointer]
+                  - button "Baixa" [ref=f23e121] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f23e123] [cursor=pointer]
+            - row [ref=f23e126]:
+              - cell "VELA-77" [ref=f23e127]
+              - cell "VELA DE IGNIÇÃO - FIAT PALIO/STRADA" [ref=f23e129]
+              - cell "11 un." [ref=f23e131]:
+                - generic [ref=f23e132]:
+                  - generic [ref=f23e133]: "11"
+                  - text: un.
+              - cell [ref=f23e134]:
+                - generic [ref=f23e135]:
+                  - button "Entrada" [ref=f23e136] [cursor=pointer]
+                  - button "Baixa" [ref=f23e138] [cursor=pointer]
+                  - button "Excluir Peça" [ref=f23e140] [cursor=pointer]

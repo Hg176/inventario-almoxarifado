@@ -1,0 +1,25 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e63]:
+    - generic [ref=f1e64]: Falha no Acesso
+    - generic [ref=f1e65]: Supabase não configurado. Defina a URL e a Anon Key nas configurações.
+  - main [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - generic [ref=f1e11]:
+        - generic [ref=f1e12]: Oficina Mecânica & Almoxarifado
+        - heading "Acesso do Operador" [level=1] [ref=f1e15]
+        - paragraph [ref=f1e16]: Entre com suas credenciais para acessar o inventário de peças
+      - generic [ref=f1e17]:
+        - generic [ref=f1e18]:
+          - generic [ref=f1e19]: E-mail Corporativo
+          - textbox "E-mail Corporativo" [ref=f1e20]:
+            - /placeholder: mecanico@oficina.com
+            - text: mecanico@oficina.com
+        - generic [ref=f1e21]:
+          - generic [ref=f1e22]: Senha de Acesso
+          - textbox "Senha de Acesso" [ref=f1e23]:
+            - /placeholder: ••••••••
+            - text: "123456"
+        - button "Entrar no Almoxarifado" [active] [ref=f1e24] [cursor=pointer]
+      - generic [ref=f1e28]:
+        - generic [ref=f1e29]: Conexão do Banco Supabase
+        - button "Configurar Chaves" [ref=f1e30] [cursor=pointer]

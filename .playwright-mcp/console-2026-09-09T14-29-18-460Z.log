@@ -1,0 +1,106 @@
+[      81ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[   82322ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   82322ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password:0
+[   82322ms] [ERROR] Erro de autenticação Supabase: AuthRetryableFetchError: Failed to fetch
+    at Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11736)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[   84723ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   84723ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup:0
+[   89609ms] [WARNING] GoTrueClient@sb-supabase-auth-token:1 (2.116.0) 2026-09-09T14:30:48.068Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. @ https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:22
+[   89653ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[   95177ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   95177ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password:0
+[   95177ms] [ERROR] Erro de autenticação Supabase: AuthRetryableFetchError: Failed to fetch
+    at Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11736)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[   98244ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   98244ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup:0
+[   98773ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   98773ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup:0
+[   98928ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   98928ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup:0
+[   99045ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[   99045ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/signup:0
+[  261509ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[  261509ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password:0
+[  261510ms] [ERROR] Erro de autenticação Supabase: AuthRetryableFetchError: Failed to fetch
+    at Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11736)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[  512084ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  521259ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/auth/v1/token?grant_type=password:0
+[  521260ms] [ERROR] Erro de autenticação Supabase: AuthApiError: Invalid path specified in request URL
+    at Be (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:10915)
+    at async Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11760)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[  526122ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/auth/v1/token?grant_type=password:0
+[  526123ms] [ERROR] Erro de autenticação Supabase: AuthApiError: Invalid path specified in request URL
+    at Be (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:10915)
+    at async Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11760)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[  560149ms] [WARNING] GoTrueClient@sb-vmejwbfwyrbucsbjetxh-auth-token:1 (2.116.0) 2026-09-09T14:38:38.608Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. @ https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:22
+[  575419ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  582437ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/auth/v1/token?grant_type=password:0
+[  582437ms] [ERROR] Erro de autenticação Supabase: AuthApiError: Invalid path specified in request URL
+    at Be (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:10915)
+    at async Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11760)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[  601382ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/auth/v1/signup:0
+[  688897ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/auth/v1/token?grant_type=password:0
+[  688898ms] [ERROR] Erro de autenticação Supabase: AuthApiError: Invalid path specified in request URL
+    at Be (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:10915)
+    at async Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11760)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23
+[  789142ms] [WARNING] GoTrueClient@sb-vmejwbfwyrbucsbjetxh-auth-token:1 (2.116.0) 2026-09-09T14:42:27.601Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key. @ https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:22
+[  807758ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  813211ms] [LOG] [Auth State Change] SIGNED_IN @ http://localhost:3333/js/app.js:46
+[  813773ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/pecas?select=id%2Ccodigo%2Cdescricao%2Cquantidade%2Ccreated_at%2Cupdated_at&order=descricao.asc:0
+[  813774ms] [ERROR] [Supabase DB Error]: {code: 42703, details: null, hint: Perhaps you meant to reference the column "pecas.created_at"., message: column pecas.updated_at does not exist} @ http://localhost:3333/js/api.js:23
+[  814365ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/pecas?select=id%2Ccodigo%2Cdescricao%2Cquantidade%2Ccreated_at%2Cupdated_at&order=descricao.asc:0
+[  814366ms] [ERROR] [Supabase DB Error]: {code: 42703, details: null, hint: Perhaps you meant to reference the column "pecas.created_at"., message: column pecas.updated_at does not exist} @ http://localhost:3333/js/api.js:23
+[  814367ms] [LOG] [Realtime Status] CLOSED @ http://localhost:3333/js/api.js:268
+[  814749ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:268
+[  956476ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956477ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956484ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956485ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956486ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956486ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956487ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956488ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956488ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  956489ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:14.565Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:261
+[  984500ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:42.657Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[  987151ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:45.312Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[  996623ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:54.508Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[  999803ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:57.518Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1001407ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:45:59.502Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1006688ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:46:04.383Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1023516ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:46:21.226Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1026167ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:46:24.033Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1028297ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:46:26.367Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1030425ms] [LOG] [Realtime Event] DELETE {schema: public, table: pecas, commit_timestamp: 2026-09-09T14:46:28.108Z, eventType: DELETE, new: Object} @ http://localhost:3333/js/api.js:261
+[ 1032211ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://vmejwbfwyrbucsbjetxh.supabase.co/rest/v1/pecas?select=id%2Ccodigo%2Cdescricao%2Cquantidade%2Ccreated_at%2Cupdated_at&order=descricao.asc:0
+[ 1032213ms] [ERROR] [Supabase DB Error]: {code: 42703, details: null, hint: Perhaps you meant to reference the column "pecas.created_at"., message: column pecas.updated_at does not exist} @ http://localhost:3333/js/api.js:23
+[ 1032215ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[ 1032437ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:268

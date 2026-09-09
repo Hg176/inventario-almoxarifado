@@ -1,0 +1,10 @@
+[    1195ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[    1411ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274
+[  121026ms] [LOG] [Auth State Change] TOKEN_REFRESHED @ http://localhost:3333/js/app.js:46
+[  291620ms] [LOG] [Realtime Event] INSERT {schema: public, table: pecas, commit_timestamp: 2026-09-09T15:43:43.217Z, eventType: INSERT, new: Object} @ http://localhost:3333/js/api.js:267
+[  444001ms] [LOG] [Realtime Status] CHANNEL_ERROR @ http://localhost:3333/js/api.js:274
+[  445613ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274
+[  601674ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  601885ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274
+[  606515ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[  606936ms] [LOG] [Realtime Status] SUBSCRIBED @ http://localhost:3333/js/api.js:274

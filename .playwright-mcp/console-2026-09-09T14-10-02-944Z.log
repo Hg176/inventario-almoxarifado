@@ -1,0 +1,9 @@
+[  921798ms] [LOG] [Auth State Change] INITIAL_SESSION @ http://localhost:3333/js/app.js:46
+[ 1043796ms] [ERROR] Access to fetch at 'https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password' from origin 'http://localhost:3333' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3333/:0
+[ 1043798ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://supabase.com/dashboard/project/vmejwbfwyrbucsbjetxh/auth/v1/token?grant_type=password:0
+[ 1043799ms] [ERROR] Erro de autenticação Supabase: AuthRetryableFetchError: Failed to fetch
+    at Wt (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11736)
+    at async f (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:8:11489)
+    at async he.signInWithPassword (https://cdn.jsdelivr.net/npm/@supabase/auth-js@2.116.0/+esm:23:21421)
+    at async Module.signIn (http://localhost:3333/js/auth.js:18:27)
+    at async HTMLFormElement.<anonymous> (http://localhost:3333/js/app.js:194:26) @ http://localhost:3333/js/auth.js:23

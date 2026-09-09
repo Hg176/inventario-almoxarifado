@@ -1,0 +1,23 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - generic [ref=e7]: Configuração Inicial Necessária
+    - generic [ref=e8]: Insira o Project URL e a Anon Key do seu projeto Supabase para iniciar.
+  - main [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Oficina Mecânica & Almoxarifado
+        - heading "Acesso do Operador" [level=1] [ref=e15]
+        - paragraph [ref=e16]: Entre com suas credenciais para acessar o inventário de peças
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: E-mail Corporativo
+          - textbox "E-mail Corporativo" [ref=e20]:
+            - /placeholder: mecanico@oficina.com
+        - generic [ref=e21]:
+          - generic [ref=e22]: Senha de Acesso
+          - textbox "Senha de Acesso" [ref=e23]:
+            - /placeholder: ••••••••
+        - button "Entrar no Almoxarifado" [ref=e24] [cursor=pointer]
+      - generic [ref=e28]:
+        - generic [ref=e29]: Conexão do Banco Supabase
+        - button "Configurar Chaves" [ref=e30] [cursor=pointer]
