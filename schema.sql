@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS public.pecas (
     CONSTRAINT pecas_quantidade_check CHECK (quantidade >= 0)
 );
 
+-- Garante que a coluna updated_at existe caso a tabela já tenha sido criada anteriormente
+ALTER TABLE public.pecas 
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+
 -- 2. TRIGGER PARA ATUALIZAÇÃO AUTOMÁTICA DE updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$

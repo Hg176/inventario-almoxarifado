@@ -358,7 +358,118 @@
   </div>
 
   <!-- ========================================================================
-       MODAL 2: MOVIMENTAÇÃO DE ESTOQUE (ENTRADA OU BAIXA)
+       MODAL 2: EDITAR MATERIAL / PEÇA (CRUD COMPLETO)
+       ======================================================================== -->
+  <div id="modalEditPart" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalEditPartTitle">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalEditPartTitle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Editar Material / Peça
+        </h3>
+        <button id="btnCloseEditPartModal" class="modal-close-btn" aria-label="Fechar modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="formEditPart">
+        <input type="hidden" id="editPartId">
+        <div class="modal-body">
+          <!-- Campo 1: Código da Peça -->
+          <div class="form-group">
+            <label for="editPartCode" class="form-label">Código da Peça / Part Number *</label>
+            <input 
+              type="text" 
+              id="editPartCode" 
+              class="form-input" 
+              placeholder="Ex: FL-0144, PF-2088..." 
+              required 
+              style="text-transform: uppercase; font-family: var(--font-mono); font-weight: 600;"
+            >
+          </div>
+
+          <!-- Campo 2: Descrição da Peça e Aplicações com Sugestões (Sempre em Maiúsculas) -->
+          <div class="form-group">
+            <label for="editPartDesc" class="form-label">Descrição Completa e Aplicação *</label>
+            <input 
+              type="text" 
+              id="editPartDesc" 
+              class="form-input uppercase-input" 
+              placeholder="EX: FILTRO DE ÓLEO FRAM PH5949" 
+              required
+              style="text-transform: uppercase;"
+              autocapitalize="characters"
+            >
+            
+            <div class="chip-group-wrapper">
+              <span class="chip-category-label">Sugestões de Peça:</span>
+              <div class="quick-chips-scroll" aria-label="Sugestões de Peça">
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="FILTRO DE ÓLEO">Filtro de Óleo</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="PASTILHA DE FREIO">Pastilha de Freio</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="DISCO DE FREIO">Disco de Freio</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="VELA DE IGNIÇÃO">Vela de Ignição</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="AMORTECEDOR DIANT.">Amortecedor Diant.</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="CORREIA DENTADA">Correia Dentada</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="BOMBA D'ÁGUA">Bomba d'Água</button>
+                <button type="button" class="modal-desc-chip edit-desc-chip" data-text="TERMINAL DIREÇÃO">Terminal Direção</button>
+              </div>
+
+              <span class="chip-category-label" style="margin-top: 0.25rem;">Sugestões de Aplicação / Veículo:</span>
+              <div class="quick-chips-scroll" aria-label="Sugestões de Aplicação">
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="GM ONIX/PRISMA">GM Onix/Prisma</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="FIAT PALIO/STRADA">Fiat Palio/Strada</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="VW GOL/FOX/POLO">VW Gol/Fox/Polo</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="FORD KA/FIESTA">Ford Ka/Fiesta</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="TOYOTA COROLLA">Toyota Corolla</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="HONDA CIVIC/FIT">Honda Civic/Fit</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="HYUNDAI HB20">Hyundai HB20</button>
+                <button type="button" class="modal-app-chip edit-app-chip" data-text="UNIVERSAL">Universal</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campo 3: Quantidade Atual em Estoque -->
+          <div class="form-group">
+            <label for="editPartQty" class="form-label">Quantidade em Estoque</label>
+            <div class="qty-stepper-wrapper">
+              <button type="button" id="btnDecEditQty" class="qty-stepper-btn" aria-label="Diminuir quantidade">-</button>
+              <input 
+                type="number" 
+                id="editPartQty" 
+                class="form-input qty-number-input" 
+                min="0" 
+                step="1" 
+                value="0" 
+                required 
+              >
+              <button type="button" id="btnIncEditQty" class="qty-stepper-btn" aria-label="Aumentar quantidade">+</button>
+            </div>
+            <div class="quick-adjust-buttons" style="margin-top: 0.35rem;">
+              <button type="button" class="quick-chip edit-part-qty-chip" data-val="0">0 un.</button>
+              <button type="button" class="quick-chip edit-part-qty-chip" data-val="1">1 un.</button>
+              <button type="button" class="quick-chip edit-part-qty-chip" data-val="5">5 un.</button>
+              <button type="button" class="quick-chip edit-part-qty-chip" data-val="10">10 un.</button>
+              <button type="button" class="quick-chip edit-part-qty-chip" data-val="20">20 un.</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnCancelEditPart" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: MOVIMENTAÇÃO DE ESTOQUE (ENTRADA)
        ======================================================================== -->
   <div id="modalMovement" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalMovementTitle">
     <div class="modal-container">

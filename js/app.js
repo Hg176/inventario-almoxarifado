@@ -448,13 +448,16 @@ function setupEventListeners() {
           ui.closeMovementModal();
         }
       } catch (err) {
-        // Captura o erro específico da constraint do PostgreSQL traduzido no api.js
         console.warn('Erro capturado na movimentação:', err);
+        const title = err.isStockConstraint
+          ? 'Regra de Estoque Violada'
+          : (err.isSchemaError ? 'Erro no Banco de Dados (Supabase)' : 'Falha na Operação');
+
         ui.showToast({
           type: 'error',
-          title: 'Regra de Estoque Violada',
+          title: title,
           message: err.message,
-          duration: 7000
+          duration: err.isSchemaError ? 9000 : 7000
         });
       } finally {
         confirmBtn.disabled = false;

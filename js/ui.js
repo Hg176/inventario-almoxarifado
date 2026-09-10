@@ -67,7 +67,9 @@ const elements = {
   btnCancelConfig: document.getElementById('btnCancelConfig'),
   
   // Toast Container
-  toastContainer: document.getElementById('toastContainer')
+  get toastContainer() {
+    return document.getElementById('toastContainer') || document.body;
+  }
 };
 
 // Estado local da UI para cálculo de modais
@@ -287,7 +289,16 @@ export function closeNewPartModal() {
 // ==============================================================================
 // 6. MODAL DE MOVIMENTAÇÃO RÁPIDA (ENTRADA / BAIXA)
 // ==============================================================================
-export function openMovementModal(peca, type) {
+export function openMovementModal(arg1, arg2) {
+  let peca, type;
+  if (typeof arg1 === 'string') {
+    type = arg1;
+    peca = arg2;
+  } else {
+    peca = arg1;
+    type = arg2;
+  }
+
   currentMovementItem = peca;
   currentMovementType = type;
 
@@ -296,9 +307,9 @@ export function openMovementModal(peca, type) {
     ? `<span style="color: var(--accent-success)">▲ Dar Entrada de Estoque</span>` 
     : `<span style="color: var(--accent-warning)">▼ Dar Baixa de Estoque</span>`;
 
-  elements.movementPartCode.textContent = peca.codigo;
-  elements.movementPartDesc.textContent = (peca.descricao || '').toUpperCase();
-  elements.movementCurrentStock.textContent = `${peca.quantidade} un.`;
+  elements.movementPartCode.textContent = peca?.codigo || '---';
+  elements.movementPartDesc.textContent = (peca?.descricao || '').toUpperCase();
+  elements.movementCurrentStock.textContent = `${peca?.quantidade ?? 0} un.`;
 
   elements.movementAmountInput.value = 1;
   elements.movementConfirmBtn.className = `btn ${isEntrada ? 'btn-action-entrada' : 'btn-action-baixa'}`;

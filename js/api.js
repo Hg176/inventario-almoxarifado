@@ -43,6 +43,19 @@ function handleDatabaseError(error, customContext = '') {
     return customErr;
   }
 
+  // Código 42703 = undefined_column (ex: trigger buscando coluna updated_at inexistente)
+  if (
+    error?.code === '42703' || 
+    error?.message?.includes('record "new" has no field') || 
+    error?.message?.includes('update_at') ||
+    error?.message?.includes('updated_at')
+  ) {
+    const customErr = new Error('A tabela no Supabase não possui a coluna "updated_at", mas há um trigger tentando atualizá-la. Execute o script fix_updated_at.sql no SQL Editor do Supabase.');
+    customErr.code = '42703';
+    customErr.isSchemaError = true;
+    return customErr;
+  }
+
   // Erros de RLS / Permissão
   if (error?.code === '42501' || error?.message?.includes('permission denied')) {
     return new Error('Acesso negado pelas políticas de segurança (RLS). Faça login para continuar.');
@@ -135,6 +148,17 @@ export async function darEntrada(id, quantidadeAdicionar) {
     return rpcData;
   }
 
+  // Se o RPC falhou por erro de trigger/coluna (42703), não tenta o fallback pois falhará igual
+  if (rpcError) {
+    if (
+      rpcError.code === '42703' || 
+      rpcError.message?.includes('record "new" has no field') || 
+      rpcError.message?.includes('updated_at')
+    ) {
+      throw handleDatabaseError(rpcError, 'efetuar entrada de estoque');
+    }
+  }
+
   // Fallback padrão direto na tabela via SDK Supabase
   const { data: pecaAtual, error: fetchError } = await supabase
     .from('pecas')
@@ -189,8 +213,18 @@ export async function darBaixa(id, quantidadeSubtrair) {
     return rpcData;
   }
 
-  if (rpcError && (rpcError.code === '23514' || rpcError.message?.includes('pecas_quantidade_check'))) {
-    throw handleDatabaseError(rpcError, 'efetuar baixa de estoque');
+  // Se o RPC retornou erro de regra de negócio (23514) ou erro de schema/trigger (42703),
+  // dispara o erro imediatamente sem tentar fallback desnecessário que falharia do mesmo modo
+  if (rpcError) {
+    if (
+      rpcError.code === '23514' || 
+      rpcError.message?.includes('pecas_quantidade_check') ||
+      rpcError.code === '42703' || 
+      rpcError.message?.includes('record "new" has no field') || 
+      rpcError.message?.includes('updated_at')
+    ) {
+      throw handleDatabaseError(rpcError, 'efetuar baixa de estoque');
+    }
   }
 
   // Fallback direto na tabela via SDK Supabase
@@ -216,6 +250,48 @@ export async function darBaixa(id, quantidadeSubtrair) {
 
   if (error) {
     throw handleDatabaseError(error, 'efetuar baixa de estoque');
+  }
+
+  return data;
+}
+
+/**
+ * UPDATE (CRUD COMPLETO): Atualiza os dados cadastrais da peça (código, descrição e quantidade)
+ * @param {string} id UUID da peça
+ * @param {Object} dados
+ * @param {string} dados.codigo
+ * @param {string} dados.descricao
+ * @param {number} dados.quantidade
+ * @returns {Promise<Object>}
+ */
+export async function atualizarPeca(id, { codigo, descricao, quantidade }) {
+  const supabase = ensureClient();
+
+  if (!id) throw new Error('ID da peça é obrigatório para atualização.');
+  if (!codigo || !descricao) {
+    throw new Error('Código e Descrição da peça são obrigatórios.');
+  }
+
+  const qtd = parseInt(quantidade, 10);
+  if (isNaN(qtd) || qtd < 0) {
+    throw new Error('A quantidade deve ser um número inteiro maior ou igual a zero.');
+  }
+
+  const payload = {
+    codigo: codigo.trim().toUpperCase(),
+    descricao: descricao.trim().toUpperCase(),
+    quantidade: qtd
+  };
+
+  const { data, error } = await supabase
+    .from('pecas')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw handleDatabaseError(error, 'atualizar cadastro da peça');
   }
 
   return data;
