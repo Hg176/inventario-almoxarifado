@@ -74,6 +74,8 @@ const elements = {
   btnCloseMovementModal: document.getElementById('btnCloseMovementModal'),
   btnCancelMovement: document.getElementById('btnCancelMovement'),
   movementQuickChips: document.querySelectorAll('.quick-chip'),
+  movementPriceGroup: document.getElementById('movementPriceGroup'),
+  movementNewPrice: document.getElementById('movementNewPrice'),
   
   // Modal Configurações Supabase
   modalConfig: document.getElementById('modalConfig'),
@@ -90,12 +92,34 @@ const elements = {
 };
 
 /**
+ * Converte qualquer entrada de preço (com vírgula, ponto, prefixo R$, etc.) em número float
+ * Suporta formatos: "35,50", "35.50", "R$ 35,50", "1.250,00", "0"
+ * @param {string|number} value 
+ * @returns {number}
+ */
+export function parseCurrencyInput(value) {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') {
+    return isNaN(value) || value < 0 ? 0 : Number(value.toFixed(2));
+  }
+  let str = String(value).trim().replace(/[R$\s]/g, '');
+  if (!str) return 0;
+  if (str.includes(',') && str.includes('.')) {
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else if (str.includes(',')) {
+    str = str.replace(',', '.');
+  }
+  const num = parseFloat(str);
+  return isNaN(num) || num < 0 ? 0 : Number(num.toFixed(2));
+}
+
+/**
  * Utilitário de formatação de moeda para padrão brasileiro (R$ 0,00)
  * @param {number|string} value 
  * @returns {string}
  */
 export function formatCurrency(value) {
-  const num = Number(value) || 0;
+  const num = parseCurrencyInput(value);
   return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
@@ -166,7 +190,7 @@ function createTableRow(peca, handlers = {}) {
       <div class="part-description">${escapeHtml((peca.descricao || '').toUpperCase())}</div>
     </td>
     <td class="col-right" style="text-align: right;">
-      <span class="price-badge">${formatCurrency(peca.preco)}</span>
+      <span class="price-badge" style="cursor: pointer;" title="Clique para editar o preço desta peça">${formatCurrency(peca.preco)}</span>
     </td>
     <td class="col-center" style="text-align: center;">
       <span class="stock-pill ${stockClass}">
@@ -213,7 +237,11 @@ function createTableRow(peca, handlers = {}) {
   const btnBaixa = tr.querySelector('[data-action="baixa"]');
   const btnEdit = tr.querySelector('[data-action="edit"]');
   const btnDelete = tr.querySelector('[data-action="delete"]');
+  const priceBadge = tr.querySelector('.price-badge');
 
+  if (priceBadge && handlers.onEdit) {
+    priceBadge.addEventListener('click', () => handlers.onEdit(peca));
+  }
   if (btnEntrada && handlers.onEntrada) {
     btnEntrada.addEventListener('click', () => handlers.onEntrada(peca));
   }
@@ -250,7 +278,14 @@ export function updateTableRowRealtime(newPeca, oldPeca, handlers) {
 
   // Atualizar preço
   const priceBadge = tr.querySelector('.price-badge');
-  if (priceBadge) priceBadge.textContent = formatCurrency(newPeca.preco);
+  if (priceBadge) {
+    priceBadge.textContent = formatCurrency(newPeca.preco);
+    if (handlers.onEdit) {
+      priceBadge.style.cursor = 'pointer';
+      priceBadge.title = 'Clique para editar o preço desta peça';
+      priceBadge.onclick = () => handlers.onEdit(newPeca);
+    }
+  }
 
   // Atualizar badge de quantidade
   const stockPill = tr.querySelector('.stock-pill');
@@ -334,7 +369,7 @@ export function openNewPartModal() {
     elements.inputNewPartQty.value = '0';
   }
   if (elements.inputNewPartPrice) {
-    elements.inputNewPartPrice.value = '0.00';
+    elements.inputNewPartPrice.value = '0,00';
   }
   elements.modalNewPart.classList.add('active');
   setTimeout(() => elements.inputNewPartCode.focus(), 50);
@@ -353,12 +388,18 @@ export function openEditPartModal(peca) {
   if (elements.editPartCode) elements.editPartCode.value = peca.codigo || '';
   if (elements.editPartDesc) elements.editPartDesc.value = (peca.descricao || '').toUpperCase();
   if (elements.editPartQty) elements.editPartQty.value = peca.quantidade ?? 0;
-  if (elements.editPartPrice) elements.editPartPrice.value = (Number(peca.preco) || 0).toFixed(2);
+  if (elements.editPartPrice) {
+    const p = Number(peca.preco) || 0;
+    elements.editPartPrice.value = p.toFixed(2).replace('.', ',');
+  }
 
   if (elements.modalEditPart) {
     elements.modalEditPart.classList.add('active');
     setTimeout(() => {
-      if (elements.editPartPrice) elements.editPartPrice.focus();
+      if (elements.editPartPrice) {
+        elements.editPartPrice.focus();
+        elements.editPartPrice.select();
+      }
     }, 50);
   }
 }
@@ -397,6 +438,14 @@ export function openMovementModal(arg1, arg2) {
     elements.movementPartPrice.textContent = formatCurrency(peca?.preco);
   }
 
+  if (elements.movementPriceGroup) {
+    elements.movementPriceGroup.style.display = isEntrada ? 'block' : 'none';
+  }
+  if (elements.movementNewPrice) {
+    const p = Number(peca?.preco) || 0;
+    elements.movementNewPrice.value = p > 0 ? p.toFixed(2).replace('.', ',') : '';
+  }
+
   elements.movementAmountInput.value = 1;
   elements.movementConfirmBtn.className = `btn ${isEntrada ? 'btn-action-entrada' : 'btn-action-baixa'}`;
   elements.movementConfirmBtn.textContent = isEntrada ? 'Confirmar Entrada' : 'Confirmar Baixa';
@@ -422,6 +471,12 @@ export function updateMovementPreview() {
   const enteredQty = parseInt(elements.movementAmountInput.value, 10) || 0;
   const unitPrice = Number(currentMovementItem.preco) || 0;
 
+  let effectiveUnitPrice = unitPrice;
+  if (currentMovementType === 'entrada' && elements.movementNewPrice && elements.movementNewPrice.value) {
+    const customP = parseCurrencyInput(elements.movementNewPrice.value);
+    if (customP > 0) effectiveUnitPrice = customP;
+  }
+
   let newBalance = currentMovementType === 'entrada' 
     ? currentQty + enteredQty 
     : currentQty - enteredQty;
@@ -439,7 +494,7 @@ export function updateMovementPreview() {
 
   // Atualiza valor total financeiro da movimentação
   if (elements.movementTotalValue) {
-    const totalMovVal = enteredQty * unitPrice;
+    const totalMovVal = enteredQty * effectiveUnitPrice;
     elements.movementTotalValue.textContent = formatCurrency(totalMovVal);
   }
 }

@@ -51,16 +51,19 @@ function handleDatabaseError(error, customContext = '') {
     return customErr;
   }
 
-  // Código 42703 = undefined_column (ex: coluna updated_at ou preco inexistente)
+  // Erros de coluna inexistente ou schema cache desatualizado
   if (
     error?.code === '42703' || 
+    error?.code === 'PGRST204' ||
+    error?.code === 'PGRST200' ||
     error?.message?.includes('record "new" has no field') || 
     error?.message?.includes('update_at') ||
     error?.message?.includes('updated_at') ||
-    error?.message?.includes('preco')
+    error?.message?.includes('preco') ||
+    error?.message?.includes('schema cache')
   ) {
-    if (error?.message?.includes('preco') || error?.message?.includes('"preco"')) {
-      const customErr = new Error('A tabela no Supabase não possui a coluna "preco". Execute o script add_preco_column.sql no SQL Editor do Supabase.');
+    if (error?.message?.includes('preco') || error?.message?.includes('"preco"') || error?.details?.includes('preco')) {
+      const customErr = new Error('A coluna "preco" ainda não foi sincronizada na API do Supabase. Execute o script add_preco_column.sql e rode NOTIFY pgrst, \'reload schema\'; no SQL Editor.');
       customErr.code = '42703';
       customErr.isSchemaError = true;
       return customErr;
@@ -123,7 +126,17 @@ export async function cadastrarPeca({ codigo, descricao, quantidade = 0, preco =
 
   let parsedPreco = 0;
   if (preco !== undefined && preco !== null && preco !== '') {
-    parsedPreco = typeof preco === 'number' ? preco : parseFloat(String(preco).replace(',', '.'));
+    if (typeof preco === 'number') {
+      parsedPreco = preco;
+    } else {
+      let str = String(preco).trim().replace(/[R$\s]/g, '');
+      if (str.includes(',') && str.includes('.')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else if (str.includes(',')) {
+        str = str.replace(',', '.');
+      }
+      parsedPreco = parseFloat(str);
+    }
   }
   if (isNaN(parsedPreco) || parsedPreco < 0) {
     throw new Error('O preço unitário deve ser um número maior ou igual a zero.');
@@ -137,6 +150,8 @@ export async function cadastrarPeca({ codigo, descricao, quantidade = 0, preco =
     preco: parsedPreco
   };
 
+  console.log('[Supabase API] Enviando cadastro de peça:', novaPeca);
+
   const { data, error } = await supabase
     .from('pecas')
     .insert([novaPeca])
@@ -144,20 +159,23 @@ export async function cadastrarPeca({ codigo, descricao, quantidade = 0, preco =
     .single();
 
   if (error) {
+    console.error('[Supabase API] Erro ao cadastrar:', error);
     throw handleDatabaseError(error, 'cadastrar nova peça');
   }
 
+  console.log('[Supabase API] Peça salva com sucesso:', data);
   return data;
 }
 
 /**
  * UPDATE (ENTRADA): Registra entrada de estoque
- * Envia a alteração diretamente ao Supabase.
+ * Envia a alteração diretamente ao Supabase, permitindo opcionalmente atualizar o preço unitário.
  * @param {string} id UUID da peça
  * @param {number} quantidadeAdicionar Valor a somar (> 0)
+ * @param {number|string|null} [novoPreco=null] Novo preço unitário se ajustado nesta entrada
  * @returns {Promise<Object>}
  */
-export async function darEntrada(id, quantidadeAdicionar) {
+export async function darEntrada(id, quantidadeAdicionar, novoPreco = null) {
   const supabase = ensureClient();
   const qtd = parseInt(quantidadeAdicionar, 10);
 
@@ -165,31 +183,21 @@ export async function darEntrada(id, quantidadeAdicionar) {
     throw new Error('Informe uma quantidade válida superior a zero para dar entrada.');
   }
 
-  // Tenta executar via RPC atômico caso o script SQL tenha sido executado com a função
-  const { data: rpcData, error: rpcError } = await supabase.rpc('movimentar_estoque', {
-    p_id: id,
-    p_quantidade: qtd
-  });
+  // Se NÃO estiver alterando o preço, tenta executar via RPC atômico
+  const hasPriceChange = novoPreco !== null && novoPreco !== undefined && novoPreco !== '';
+  if (!hasPriceChange) {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('movimentar_estoque', {
+      p_id: id,
+      p_quantidade: qtd
+    });
 
-  if (!rpcError && rpcData) {
-    return rpcData;
-  }
-
-  // Se o RPC falhou por erro de trigger/coluna (42703), não tenta o fallback pois falhará igual
-  if (rpcError) {
-    if (
-      rpcError.code === '42703' || 
-      rpcError.message?.includes('record "new" has no field') || 
-      rpcError.message?.includes('updated_at')
-    ) {
-      throw handleDatabaseError(rpcError, 'efetuar entrada de estoque');
+    if (!rpcError && rpcData) {
+      return rpcData;
     }
   }
-
-  // Fallback padrão direto na tabela via SDK Supabase
   const { data: pecaAtual, error: fetchError } = await supabase
     .from('pecas')
-    .select('quantidade')
+    .select('quantidade, preco')
     .eq('id', id)
     .single();
 
@@ -198,18 +206,41 @@ export async function darEntrada(id, quantidadeAdicionar) {
   }
 
   const novoSaldo = (pecaAtual.quantidade || 0) + qtd;
+  const updatePayload = { quantidade: novoSaldo };
+
+  if (novoPreco !== null && novoPreco !== undefined && novoPreco !== '') {
+    let parsedPreco = 0;
+    if (typeof novoPreco === 'number') {
+      parsedPreco = novoPreco;
+    } else {
+      let str = String(novoPreco).trim().replace(/[R$\s]/g, '');
+      if (str.includes(',') && str.includes('.')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else if (str.includes(',')) {
+        str = str.replace(',', '.');
+      }
+      parsedPreco = parseFloat(str);
+    }
+    if (!isNaN(parsedPreco) && parsedPreco >= 0) {
+      updatePayload.preco = Number(parsedPreco.toFixed(2));
+    }
+  }
+
+  console.log('[Supabase API] Enviando entrada de estoque:', id, updatePayload);
 
   const { data, error } = await supabase
     .from('pecas')
-    .update({ quantidade: novoSaldo })
+    .update(updatePayload)
     .eq('id', id)
     .select()
     .single();
 
   if (error) {
+    console.error('[Supabase API] Erro na entrada:', error);
     throw handleDatabaseError(error, 'efetuar entrada de estoque');
   }
 
+  console.log('[Supabase API] Entrada de estoque concluída:', data);
   return data;
 }
 
@@ -307,7 +338,17 @@ export async function atualizarPeca(id, { codigo, descricao, quantidade, preco }
 
   let parsedPreco = 0;
   if (preco !== undefined && preco !== null && preco !== '') {
-    parsedPreco = typeof preco === 'number' ? preco : parseFloat(String(preco).replace(',', '.'));
+    if (typeof preco === 'number') {
+      parsedPreco = preco;
+    } else {
+      let str = String(preco).trim().replace(/[R$\s]/g, '');
+      if (str.includes(',') && str.includes('.')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else if (str.includes(',')) {
+        str = str.replace(',', '.');
+      }
+      parsedPreco = parseFloat(str);
+    }
   }
   if (isNaN(parsedPreco) || parsedPreco < 0) {
     throw new Error('O preço unitário deve ser um número maior ou igual a zero.');
@@ -321,6 +362,8 @@ export async function atualizarPeca(id, { codigo, descricao, quantidade, preco }
     preco: parsedPreco
   };
 
+  console.log('[Supabase API] Enviando atualização de peça:', id, payload);
+
   const { data, error } = await supabase
     .from('pecas')
     .update(payload)
@@ -329,9 +372,11 @@ export async function atualizarPeca(id, { codigo, descricao, quantidade, preco }
     .single();
 
   if (error) {
+    console.error('[Supabase API] Erro ao atualizar:', error);
     throw handleDatabaseError(error, 'atualizar cadastro da peça');
   }
 
+  console.log('[Supabase API] Peça atualizada com sucesso:', data);
   return data;
 }
 

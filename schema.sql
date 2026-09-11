@@ -143,3 +143,6 @@ ON CONFLICT (codigo) DO UPDATE SET preco = EXCLUDED.preco;
 --    (Ex: mecanico@oficina.com / senha: sua-senha)
 -- 2. Na própria tela do sistema: Preencha o e-mail e senha e clique em "Cadastrar Novo Operador".
 
+-- 8. RECARREGAR CACHE DO POSTGREST
+NOTIFY pgrst, 'reload schema';
+

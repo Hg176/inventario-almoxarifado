@@ -382,13 +382,12 @@
             <div class="price-input-wrapper">
               <span class="price-currency-prefix">R$</span>
               <input 
-                type="number" 
+                type="text" 
+                inputmode="decimal" 
                 id="newPartPrice" 
                 class="form-input price-input" 
-                min="0" 
-                step="0.01" 
                 placeholder="0,00" 
-                value="0.00" 
+                value="0,00" 
                 required 
               >
             </div>
@@ -518,13 +517,12 @@
             <div class="price-input-wrapper">
               <span class="price-currency-prefix">R$</span>
               <input 
-                type="number" 
+                type="text" 
+                inputmode="decimal" 
                 id="editPartPrice" 
                 class="form-input price-input" 
-                min="0" 
-                step="0.01" 
                 placeholder="0,00" 
-                value="0.00" 
+                value="0,00" 
                 required 
               >
             </div>
@@ -606,6 +604,24 @@
             <span>Valor Total da Movimentação:</span>
             <span id="movementTotalValue" class="preview-val" style="color: var(--text-primary); font-size: 1.05rem;">R$ 0,00</span>
           </div>
+
+          <!-- Atualizar Preço Unitário Opcional (visível apenas na Entrada) -->
+          <div id="movementPriceGroup" class="form-group" style="display: none; margin-top: 0.75rem;">
+            <label for="movementNewPrice" class="form-label">
+              Atualizar Preço Unitário nesta Entrada (R$)
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(Opcional)</span>
+            </label>
+            <div class="price-input-wrapper">
+              <span class="price-currency-prefix">R$</span>
+              <input 
+                type="text" 
+                inputmode="decimal" 
+                id="movementNewPrice" 
+                class="form-input price-input" 
+                placeholder="0,00" 
+              >
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -678,7 +694,7 @@
     </div>
   </div>
 
-  <!-- Script Principal Modular (ES6) -->
-  <script type="module" src="./js/app.js"></script>
+  <!-- Script Principal Modular (ES6) com Cache Busting -->
+  <script type="module" src="./js/app.js?v=1.2.0"></script>
 </body>
 </html>

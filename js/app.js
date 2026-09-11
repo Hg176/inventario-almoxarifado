@@ -2,10 +2,10 @@
 // PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (app.js)
 // ORQUESTRAÇÃO DE AUTENTICAÇÃO, SUPABASE REALTIME E CRUD
 // ==============================================================================
-import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js';
-import * as auth from './auth.js';
-import * as api from './api.js';
-import * as ui from './ui.js';
+import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js?v=1.2.0';
+import * as auth from './auth.js?v=1.2.0';
+import * as api from './api.js?v=1.2.0';
+import * as ui from './ui.js?v=1.2.0';
 
 // Cache em memória das peças sincronizadas com o banco
 let pecasList = [];
@@ -365,9 +365,15 @@ function setupEventListeners() {
     chip.addEventListener('click', () => {
       if (!newPartPriceInput) return;
       const val = parseFloat(chip.dataset.val);
-      newPartPriceInput.value = isNaN(val) ? '0.00' : val.toFixed(2);
+      newPartPriceInput.value = isNaN(val) ? '0,00' : val.toFixed(2).replace('.', ',');
     });
   });
+  if (newPartPriceInput) {
+    newPartPriceInput.addEventListener('blur', () => {
+      const parsed = ui.parseCurrencyInput(newPartPriceInput.value);
+      newPartPriceInput.value = parsed.toFixed(2).replace('.', ',');
+    });
+  }
 
   // Envio do Formulário de Nova Peça
   const formNewPart = document.getElementById('formNewPart');
@@ -377,7 +383,7 @@ function setupEventListeners() {
       const codigo = document.getElementById('newPartCode').value.trim().toUpperCase();
       const descricao = document.getElementById('newPartDesc').value.trim().toUpperCase();
       const quantidade = newPartQtyInput ? (parseInt(newPartQtyInput.value, 10) || 0) : 0;
-      const preco = newPartPriceInput ? (parseFloat(newPartPriceInput.value.replace(',', '.')) || 0) : 0;
+      const preco = newPartPriceInput ? ui.parseCurrencyInput(newPartPriceInput.value) : 0;
 
       try {
         const novaPeca = await api.cadastrarPeca({ codigo, descricao, quantidade, preco });
@@ -470,9 +476,15 @@ function setupEventListeners() {
     chip.addEventListener('click', () => {
       if (!editPartPriceInput) return;
       const val = parseFloat(chip.dataset.val);
-      editPartPriceInput.value = isNaN(val) ? '0.00' : val.toFixed(2);
+      editPartPriceInput.value = isNaN(val) ? '0,00' : val.toFixed(2).replace('.', ',');
     });
   });
+  if (editPartPriceInput) {
+    editPartPriceInput.addEventListener('blur', () => {
+      const parsed = ui.parseCurrencyInput(editPartPriceInput.value);
+      editPartPriceInput.value = parsed.toFixed(2).replace('.', ',');
+    });
+  }
 
   // Envio do Formulário de Edição
   const formEditPart = document.getElementById('formEditPart');
@@ -483,14 +495,14 @@ function setupEventListeners() {
       const codigo = document.getElementById('editPartCode').value.trim().toUpperCase();
       const descricao = document.getElementById('editPartDesc').value.trim().toUpperCase();
       const quantidade = editPartQtyInput ? (parseInt(editPartQtyInput.value, 10) || 0) : 0;
-      const preco = editPartPriceInput ? (parseFloat(editPartPriceInput.value.replace(',', '.')) || 0) : 0;
+      const preco = editPartPriceInput ? ui.parseCurrencyInput(editPartPriceInput.value) : 0;
 
       try {
         const pecaAtualizada = await api.atualizarPeca(id, { codigo, descricao, quantidade, preco });
         ui.showToast({
           type: 'success',
           title: 'Peça Atualizada',
-          message: `${pecaAtualizada.codigo} atualizada com sucesso.`
+          message: `${pecaAtualizada.codigo} atualizada com sucesso (Preço: ${ui.formatCurrency(pecaAtualizada.preco)}).`
         });
         ui.closeEditPartModal();
 
@@ -524,6 +536,20 @@ function setupEventListeners() {
     movementInput.addEventListener('input', () => ui.updateMovementPreview());
   }
 
+  const movementNewPriceInput = document.getElementById('movementNewPrice');
+  if (movementNewPriceInput) {
+    movementNewPriceInput.addEventListener('input', () => {
+      ui.updateMovementPreview();
+    });
+    movementNewPriceInput.addEventListener('blur', () => {
+      if (movementNewPriceInput.value.trim()) {
+        const parsed = ui.parseCurrencyInput(movementNewPriceInput.value);
+        movementNewPriceInput.value = parsed.toFixed(2).replace('.', ',');
+      }
+      ui.updateMovementPreview();
+    });
+  }
+
   // Chips de incremento rápido no modal de movimentação (+1, +5, +10, +20)
   document.querySelectorAll('#modalMovement .quick-chip[data-step]').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -550,13 +576,25 @@ function setupEventListeners() {
         confirmBtn.textContent = 'Enviando ao banco...';
 
         if (type === 'entrada') {
-          const updated = await api.darEntrada(item.id, amount);
+          let novoPreco = null;
+          if (movementNewPriceInput && movementNewPriceInput.value.trim() !== '') {
+            novoPreco = ui.parseCurrencyInput(movementNewPriceInput.value);
+          }
+          const updated = await api.darEntrada(item.id, amount, novoPreco);
+          const priceMsg = novoPreco !== null ? ` (Preço: ${ui.formatCurrency(updated.preco)})` : '';
           ui.showToast({
             type: 'success',
             title: 'Entrada Confirmada',
-            message: `+${amount} unidades registradas para ${item.codigo}. Novo saldo: ${updated.quantidade} un.`
+            message: `+${amount} unidades registradas para ${item.codigo}. Novo saldo: ${updated.quantidade} un.${priceMsg}`
           });
           ui.closeMovementModal();
+
+          // Sincroniza localmente caso o Realtime demore milissegundos
+          const idx = pecasList.findIndex(p => p.id === updated.id);
+          const prev = idx !== -1 ? pecasList[idx] : item;
+          if (idx !== -1) pecasList[idx] = updated;
+          ui.updateTableRowRealtime(updated, prev, getTableHandlers());
+          ui.updateMetrics(pecasList);
         } else {
           // REGRA CRÍTICA: Baixa de estoque
           // A validação principal ocorre no PostgreSQL através da constraint CHECK (quantidade >= 0).
@@ -568,6 +606,12 @@ function setupEventListeners() {
             message: `-${amount} unidades registradas para ${item.codigo}. Novo saldo: ${updated.quantidade} un.`
           });
           ui.closeMovementModal();
+
+          const idx = pecasList.findIndex(p => p.id === updated.id);
+          const prev = idx !== -1 ? pecasList[idx] : item;
+          if (idx !== -1) pecasList[idx] = updated;
+          ui.updateTableRowRealtime(updated, prev, getTableHandlers());
+          ui.updateMetrics(pecasList);
         }
       } catch (err) {
         console.warn('Erro capturado na movimentação:', err);

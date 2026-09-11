@@ -30,3 +30,7 @@ UPDATE public.pecas SET preco = 32.00 WHERE codigo = 'FB-0045' AND (preco IS NUL
 UPDATE public.pecas SET preco = 58.00 WHERE codigo = 'FA-8812' AND (preco IS NULL OR preco = 0);
 UPDATE public.pecas SET preco = 210.00 WHERE codigo = 'BP-4430' AND (preco IS NULL OR preco = 0);
 UPDATE public.pecas SET preco = 48.00 WHERE codigo = 'BL-7701' AND (preco IS NULL OR preco = 0);
+
+-- 4. RECARREGAR O CACHE DO SUPABASE POSTGREST
+-- Força o PostgREST a reconhecer a nova coluna 'preco' imediatamente na API REST
+NOTIFY pgrst, 'reload schema';
