@@ -158,19 +158,46 @@
 
         <div class="metric-card">
           <div class="metric-info">
-            <h3>Peças Físicas em Estoque</h3>
+            <h3>Peças em Estoque</h3>
             <div id="metricTotalStock" class="metric-value">0</div>
           </div>
           <div class="metric-icon-box metric-icon-success">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
             </svg>
           </div>
         </div>
 
         <div class="metric-card">
           <div class="metric-info">
-            <h3>Itens com Estoque Zerado</h3>
+            <h3>Valor Total em Estoque</h3>
+            <div id="metricTotalValue" class="metric-value">R$ 0,00</div>
+          </div>
+          <div class="metric-icon-box metric-icon-emerald">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-info">
+            <h3>Preço Médio / Peça</h3>
+            <div id="metricAvgPrice" class="metric-value">R$ 0,00</div>
+          </div>
+          <div class="metric-icon-box metric-icon-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-info">
+            <h3>Itens Zerados</h3>
             <div id="metricZeroStock" class="metric-value">0</div>
           </div>
           <div class="metric-icon-box metric-icon-danger">
@@ -223,10 +250,11 @@
           <table class="inventory-table">
             <thead>
               <tr>
-                <th style="width: 15%;">Código</th>
-                <th style="width: 45%;">Descrição da Peça</th>
-                <th class="col-center" style="width: 20%; text-align: center;">Quantidade Atual</th>
-                <th class="col-center" style="width: 20%; text-align: center;">Ações</th>
+                <th style="width: 14%;">Código</th>
+                <th style="width: 36%;">Descrição da Peça</th>
+                <th class="col-right" style="width: 16%; text-align: right;">Preço Unitário</th>
+                <th class="col-center" style="width: 16%; text-align: center;">Quantidade Atual</th>
+                <th class="col-center" style="width: 18%; text-align: center;">Ações</th>
               </tr>
             </thead>
             <tbody id="partsTableBody">
@@ -347,6 +375,31 @@
               <button type="button" class="quick-chip new-part-qty-chip" data-val="20">20 un.</button>
             </div>
           </div>
+
+          <!-- Campo 4: Preço Unitário (R$) -->
+          <div class="form-group">
+            <label for="newPartPrice" class="form-label">Preço Unitário (R$) *</label>
+            <div class="price-input-wrapper">
+              <span class="price-currency-prefix">R$</span>
+              <input 
+                type="number" 
+                id="newPartPrice" 
+                class="form-input price-input" 
+                min="0" 
+                step="0.01" 
+                placeholder="0,00" 
+                value="0.00" 
+                required 
+              >
+            </div>
+            <div class="quick-adjust-buttons" style="margin-top: 0.35rem;">
+              <button type="button" class="quick-chip new-part-price-chip" data-val="15.00">R$ 15</button>
+              <button type="button" class="quick-chip new-part-price-chip" data-val="35.00">R$ 35</button>
+              <button type="button" class="quick-chip new-part-price-chip" data-val="75.00">R$ 75</button>
+              <button type="button" class="quick-chip new-part-price-chip" data-val="150.00">R$ 150</button>
+              <button type="button" class="quick-chip new-part-price-chip" data-val="300.00">R$ 300</button>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -458,6 +511,31 @@
               <button type="button" class="quick-chip edit-part-qty-chip" data-val="20">20 un.</button>
             </div>
           </div>
+
+          <!-- Campo 4: Preço Unitário (R$) -->
+          <div class="form-group">
+            <label for="editPartPrice" class="form-label">Preço Unitário (R$) *</label>
+            <div class="price-input-wrapper">
+              <span class="price-currency-prefix">R$</span>
+              <input 
+                type="number" 
+                id="editPartPrice" 
+                class="form-input price-input" 
+                min="0" 
+                step="0.01" 
+                placeholder="0,00" 
+                value="0.00" 
+                required 
+              >
+            </div>
+            <div class="quick-adjust-buttons" style="margin-top: 0.35rem;">
+              <button type="button" class="quick-chip edit-part-price-chip" data-val="15.00">R$ 15</button>
+              <button type="button" class="quick-chip edit-part-price-chip" data-val="35.00">R$ 35</button>
+              <button type="button" class="quick-chip edit-part-price-chip" data-val="75.00">R$ 75</button>
+              <button type="button" class="quick-chip edit-part-price-chip" data-val="150.00">R$ 150</button>
+              <button type="button" class="quick-chip edit-part-price-chip" data-val="300.00">R$ 300</button>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -469,7 +547,7 @@
   </div>
 
   <!-- ========================================================================
-       MODAL 3: MOVIMENTAÇÃO DE ESTOQUE (ENTRADA)
+       MODAL 3: MOVIMENTAÇÃO DE ESTOQUE (ENTRADA / BAIXA)
        ======================================================================== -->
   <div id="modalMovement" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalMovementTitle">
     <div class="modal-container">
@@ -491,6 +569,7 @@
             <div id="movementPartDesc" class="item-desc">---</div>
             <div class="item-stock-row">
               <span style="font-size: 0.8rem; color: var(--text-muted);">Código: <strong id="movementPartCode" style="color: var(--text-primary); font-family: var(--font-mono);">---</strong></span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Preço Unit.: <strong id="movementPartPrice" style="color: #10b981; font-family: var(--font-mono);">R$ 0,00</strong></span>
               <span style="font-size: 0.8rem; color: var(--text-muted);">Estoque Atual: <strong id="movementCurrentStock" style="color: #60a5fa; font-family: var(--font-mono);">0 un.</strong></span>
             </div>
           </div>
@@ -520,6 +599,12 @@
           <div id="movementPreviewBox" class="stock-preview-box valid">
             <span>Saldo Físico Previsto:</span>
             <span id="movementPreviewValue" class="preview-val">0 un.</span>
+          </div>
+
+          <!-- Impacto Financeiro da Movimentação -->
+          <div id="movementValueBox" class="stock-preview-box" style="margin-top: -0.5rem; background: var(--bg-surface);">
+            <span>Valor Total da Movimentação:</span>
+            <span id="movementTotalValue" class="preview-val" style="color: var(--text-primary); font-size: 1.05rem;">R$ 0,00</span>
           </div>
         </div>
 

@@ -26,6 +26,8 @@ const elements = {
   // Métricas
   metricTotalItems: document.getElementById('metricTotalItems'),
   metricTotalStock: document.getElementById('metricTotalStock'),
+  metricTotalValue: document.getElementById('metricTotalValue'),
+  metricAvgPrice: document.getElementById('metricAvgPrice'),
   metricZeroStock: document.getElementById('metricZeroStock'),
   
   // Tabela & Toolbar
@@ -41,18 +43,33 @@ const elements = {
   inputNewPartCode: document.getElementById('newPartCode'),
   inputNewPartDesc: document.getElementById('newPartDesc'),
   inputNewPartQty: document.getElementById('newPartQty'),
+  inputNewPartPrice: document.getElementById('newPartPrice'),
   btnCloseNewPartModal: document.getElementById('btnCloseNewPartModal'),
   btnCancelNewPart: document.getElementById('btnCancelNewPart'),
+
+  // Modal Editar Peça
+  modalEditPart: document.getElementById('modalEditPart'),
+  formEditPart: document.getElementById('formEditPart'),
+  editPartId: document.getElementById('editPartId'),
+  editPartCode: document.getElementById('editPartCode'),
+  editPartDesc: document.getElementById('editPartDesc'),
+  editPartQty: document.getElementById('editPartQty'),
+  editPartPrice: document.getElementById('editPartPrice'),
+  btnCloseEditPartModal: document.getElementById('btnCloseEditPartModal'),
+  btnCancelEditPart: document.getElementById('btnCancelEditPart'),
   
   // Modal Movimentação (Entrada / Baixa)
   modalMovement: document.getElementById('modalMovement'),
   modalMovementTitle: document.getElementById('modalMovementTitle'),
   movementPartCode: document.getElementById('movementPartCode'),
   movementPartDesc: document.getElementById('movementPartDesc'),
+  movementPartPrice: document.getElementById('movementPartPrice'),
   movementCurrentStock: document.getElementById('movementCurrentStock'),
   movementAmountInput: document.getElementById('movementAmountInput'),
   movementPreviewBox: document.getElementById('movementPreviewBox'),
   movementPreviewValue: document.getElementById('movementPreviewValue'),
+  movementValueBox: document.getElementById('movementValueBox'),
+  movementTotalValue: document.getElementById('movementTotalValue'),
   movementConfirmBtn: document.getElementById('movementConfirmBtn'),
   btnCloseMovementModal: document.getElementById('btnCloseMovementModal'),
   btnCancelMovement: document.getElementById('btnCancelMovement'),
@@ -71,6 +88,16 @@ const elements = {
     return document.getElementById('toastContainer') || document.body;
   }
 };
+
+/**
+ * Utilitário de formatação de moeda para padrão brasileiro (R$ 0,00)
+ * @param {number|string} value 
+ * @returns {string}
+ */
+export function formatCurrency(value) {
+  const num = Number(value) || 0;
+  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
 // Estado local da UI para cálculo de modais
 let currentMovementItem = null;
@@ -138,6 +165,9 @@ function createTableRow(peca, handlers = {}) {
     <td>
       <div class="part-description">${escapeHtml((peca.descricao || '').toUpperCase())}</div>
     </td>
+    <td class="col-right" style="text-align: right;">
+      <span class="price-badge">${formatCurrency(peca.preco)}</span>
+    </td>
     <td class="col-center" style="text-align: center;">
       <span class="stock-pill ${stockClass}">
         <span class="stock-val">${peca.quantidade}</span> un.
@@ -160,6 +190,14 @@ function createTableRow(peca, handlers = {}) {
           Baixa
         </button>
 
+        <button class="btn btn-action-edit" title="Editar Peça" data-action="edit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Editar
+        </button>
+
         <button class="btn btn-action-delete" title="Excluir Peça" data-action="delete">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
@@ -173,6 +211,7 @@ function createTableRow(peca, handlers = {}) {
   // Vinculação de eventos dos botões independentes
   const btnEntrada = tr.querySelector('[data-action="entrada"]');
   const btnBaixa = tr.querySelector('[data-action="baixa"]');
+  const btnEdit = tr.querySelector('[data-action="edit"]');
   const btnDelete = tr.querySelector('[data-action="delete"]');
 
   if (btnEntrada && handlers.onEntrada) {
@@ -180,6 +219,9 @@ function createTableRow(peca, handlers = {}) {
   }
   if (btnBaixa && handlers.onBaixa) {
     btnBaixa.addEventListener('click', () => handlers.onBaixa(peca));
+  }
+  if (btnEdit && handlers.onEdit) {
+    btnEdit.addEventListener('click', () => handlers.onEdit(peca));
   }
   if (btnDelete && handlers.onDelete) {
     btnDelete.addEventListener('click', () => handlers.onDelete(peca));
@@ -206,6 +248,10 @@ export function updateTableRowRealtime(newPeca, oldPeca, handlers) {
   const descDiv = tr.querySelector('.part-description');
   if (descDiv) descDiv.textContent = newPeca.descricao;
 
+  // Atualizar preço
+  const priceBadge = tr.querySelector('.price-badge');
+  if (priceBadge) priceBadge.textContent = formatCurrency(newPeca.preco);
+
   // Atualizar badge de quantidade
   const stockPill = tr.querySelector('.stock-pill');
   if (stockPill) {
@@ -229,11 +275,15 @@ export function updateTableRowRealtime(newPeca, oldPeca, handlers) {
   // Atualizar listeners de clique com o novo objeto peca
   const btnEntrada = tr.querySelector('[data-action="entrada"]');
   const btnBaixa = tr.querySelector('[data-action="baixa"]');
+  const btnEdit = tr.querySelector('[data-action="edit"]');
   if (btnEntrada && handlers?.onEntrada) {
     btnEntrada.onclick = () => handlers.onEntrada(newPeca);
   }
   if (btnBaixa && handlers?.onBaixa) {
     btnBaixa.onclick = () => handlers.onBaixa(newPeca);
+  }
+  if (btnEdit && handlers?.onEdit) {
+    btnEdit.onclick = () => handlers.onEdit(newPeca);
   }
 
   return true;
@@ -265,9 +315,14 @@ export function updateMetrics(pecas) {
   const totalStock = pecas.reduce((acc, p) => acc + (p.quantidade || 0), 0);
   const zeroStock = pecas.filter(p => (p.quantidade || 0) === 0).length;
 
-  elements.metricTotalItems.textContent = totalItems;
-  elements.metricTotalStock.textContent = totalStock;
-  elements.metricZeroStock.textContent = zeroStock;
+  const totalValue = pecas.reduce((acc, p) => acc + ((p.quantidade || 0) * (Number(p.preco) || 0)), 0);
+  const avgPrice = totalItems > 0 ? (pecas.reduce((acc, p) => acc + (Number(p.preco) || 0), 0) / totalItems) : 0;
+
+  if (elements.metricTotalItems) elements.metricTotalItems.textContent = totalItems;
+  if (elements.metricTotalStock) elements.metricTotalStock.textContent = totalStock;
+  if (elements.metricZeroStock) elements.metricZeroStock.textContent = zeroStock;
+  if (elements.metricTotalValue) elements.metricTotalValue.textContent = formatCurrency(totalValue);
+  if (elements.metricAvgPrice) elements.metricAvgPrice.textContent = formatCurrency(avgPrice);
 }
 
 // ==============================================================================
@@ -278,12 +333,40 @@ export function openNewPartModal() {
   if (elements.inputNewPartQty) {
     elements.inputNewPartQty.value = '0';
   }
+  if (elements.inputNewPartPrice) {
+    elements.inputNewPartPrice.value = '0.00';
+  }
   elements.modalNewPart.classList.add('active');
   setTimeout(() => elements.inputNewPartCode.focus(), 50);
 }
 
 export function closeNewPartModal() {
   elements.modalNewPart.classList.remove('active');
+}
+
+// ==============================================================================
+// 5.1 MODAL DE EDIÇÃO DE PEÇA
+// ==============================================================================
+export function openEditPartModal(peca) {
+  if (!peca) return;
+  if (elements.editPartId) elements.editPartId.value = peca.id || '';
+  if (elements.editPartCode) elements.editPartCode.value = peca.codigo || '';
+  if (elements.editPartDesc) elements.editPartDesc.value = (peca.descricao || '').toUpperCase();
+  if (elements.editPartQty) elements.editPartQty.value = peca.quantidade ?? 0;
+  if (elements.editPartPrice) elements.editPartPrice.value = (Number(peca.preco) || 0).toFixed(2);
+
+  if (elements.modalEditPart) {
+    elements.modalEditPart.classList.add('active');
+    setTimeout(() => {
+      if (elements.editPartPrice) elements.editPartPrice.focus();
+    }, 50);
+  }
+}
+
+export function closeEditPartModal() {
+  if (elements.modalEditPart) {
+    elements.modalEditPart.classList.remove('active');
+  }
 }
 
 // ==============================================================================
@@ -310,6 +393,9 @@ export function openMovementModal(arg1, arg2) {
   elements.movementPartCode.textContent = peca?.codigo || '---';
   elements.movementPartDesc.textContent = (peca?.descricao || '').toUpperCase();
   elements.movementCurrentStock.textContent = `${peca?.quantidade ?? 0} un.`;
+  if (elements.movementPartPrice) {
+    elements.movementPartPrice.textContent = formatCurrency(peca?.preco);
+  }
 
   elements.movementAmountInput.value = 1;
   elements.movementConfirmBtn.className = `btn ${isEntrada ? 'btn-action-entrada' : 'btn-action-baixa'}`;
@@ -334,6 +420,7 @@ export function updateMovementPreview() {
 
   const currentQty = currentMovementItem.quantidade || 0;
   const enteredQty = parseInt(elements.movementAmountInput.value, 10) || 0;
+  const unitPrice = Number(currentMovementItem.preco) || 0;
 
   let newBalance = currentMovementType === 'entrada' 
     ? currentQty + enteredQty 
@@ -348,6 +435,12 @@ export function updateMovementPreview() {
   } else {
     elements.movementPreviewBox.classList.remove('invalid');
     elements.movementPreviewBox.classList.add('valid');
+  }
+
+  // Atualiza valor total financeiro da movimentação
+  if (elements.movementTotalValue) {
+    const totalMovVal = enteredQty * unitPrice;
+    elements.movementTotalValue.textContent = formatCurrency(totalMovVal);
   }
 }
 

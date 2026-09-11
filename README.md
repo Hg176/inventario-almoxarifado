@@ -11,17 +11,19 @@ A aplicação foi desenvolvida em **ES6 Modules nativos**, sem necessidade de bu
 ```
 Inventario Pontual/
 ├── index.html              # Shell da aplicação (Views de Login e Dashboard de Estoque)
-├── schema.sql              # Script DDL PostgreSQL (Tabela pecas, CHECK constraint, RLS e Realtime)
+├── schema.sql              # Script DDL PostgreSQL (Tabela pecas, CHECK constraints, RLS e Realtime)
+├── add_preco_column.sql    # Script de migração para adicionar campo preco e constraint em bancos existentes
+├── fix_updated_at.sql      # Script de correção de coluna/trigger updated_at
 ├── README.md               # Documentação técnica de uso e implantação
 ├── css/
-│   ├── variables.css      # Design tokens (paleta automotiva dark, tipografia, elevações)
-│   ├── main.css           # Estrutura global, tela de login, métricas e grid responsivo
-│   └── components.css     # Tabela estilizada, botões de ação, modais rápidos e toasts
+│   ├── variables.css      # Design tokens (paleta automotiva clean light, tipografia, elevações)
+│   ├── main.css           # Estrutura global, tela de login, cards KPIs e grid responsivo
+│   └── components.css     # Tabela estilizada, botões de ação, modais rápidos, inputs de preço e toasts
 └── js/
     ├── config.js          # Inicialização do SDK Supabase e persistência de credenciais
     ├── auth.js            # Autenticação (Login, Logout, Sessão ativa, Listeners)
     ├── api.js             # Operações CRUD diretas no Supabase e canais Realtime
-    ├── ui.js              # Manipulação do DOM, renderização de tabela, modais e toasts
+    ├── ui.js              # Manipulação do DOM, renderização de tabela, modais, formatação monetária e toasts
     └── app.js             # Orquestrador do ciclo de vida da aplicação
 ```
 
@@ -52,13 +54,16 @@ Utilize a extensão **Live Server** clicando com o botão direito no `index.html
 ### 1. Criar Tabelas e Regras de Negócio no Supabase
 1. Acesse o painel do seu projeto no Supabase: [supabase.com](https://supabase.com).
 2. Vá até o menu **SQL Editor** &rarr; **New query**.
-3. Copie o conteúdo do arquivo [`schema.sql`](./schema.sql) e clique em **Run**.
-4. O script criará:
-   - Tabela `pecas` com as colunas `codigo`, `descricao`, `quantidade`, `created_at` e `updated_at`.
-   - **Regra Crítica**: Constraint `CHECK (quantidade >= 0)` que impede estoque negativo diretamente no PostgreSQL.
+3. Se for uma nova instalação, copie o conteúdo de [`schema.sql`](./schema.sql) e clique em **Run**.
+4. Caso sua tabela já exista e você queira apenas adicionar o campo de preço preservando seus dados, execute [`add_preco_column.sql`](./add_preco_column.sql).
+5. O banco contará com:
+   - Tabela `pecas` com as colunas `codigo`, `descricao`, `quantidade`, `preco`, `created_at` e `updated_at`.
+   - **Regras Críticas no PostgreSQL**:
+     - `CHECK (quantidade >= 0)`: impede estoque negativo.
+     - `CHECK (preco >= 0)`: impede preços unitários negativos.
    - Políticas de **Row Level Security (RLS)** para operadores autenticados.
    - Publicação na tabela `supabase_realtime` para sincronização instantânea.
-   - Catálogo inicial de peças automotivas reais (Filtros Fram, Pastilhas Bosch, Velas NGK, etc.).
+   - Catálogo inicial de peças automotivas reais com preços em Reais (R$).
 
 ### 2. Conectar o Frontend
 1. Ao abrir o sistema no navegador, caso não esteja configurado, o modal **Configurações da Conexão Supabase** abrirá automaticamente.

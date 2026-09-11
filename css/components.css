@@ -254,10 +254,29 @@
   text-transform: uppercase;
 }
 
-/* Alinhamento Centralizado para Quantidade e Ações */
+/* Alinhamento Centralizado e Direita */
 .inventory-table th.col-center,
 .inventory-table td.col-center {
   text-align: center;
+}
+
+.inventory-table th.col-right,
+.inventory-table td.col-right {
+  text-align: right;
+}
+
+/* Badge de Preço Unitário */
+.price-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  display: inline-block;
+  white-space: nowrap;
 }
 
 /* Badges de Quantidade (Status Pills Limpos) */
@@ -656,6 +675,31 @@
   text-align: center;
   font-family: var(--font-mono);
   font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* Input de Preço com Prefixo R$ */
+.price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-currency-prefix {
+  position: absolute;
+  left: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.price-input {
+  padding-left: 2.75rem !important;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
   font-weight: 700;
 }
 

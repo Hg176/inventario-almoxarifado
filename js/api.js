@@ -23,15 +23,23 @@ function ensureClient() {
 function handleDatabaseError(error, customContext = '') {
   console.error('[Supabase DB Error]:', error);
 
-  // REGRA CRÍTICA: Código PostgreSQL 23514 = check_violation (pecas_quantidade_check)
-  const isCheckViolation = 
-    error?.code === '23514' || 
-    error?.message?.includes('violates check constraint') ||
-    error?.message?.includes('pecas_quantidade_check');
+  // REGRA CRÍTICA: Código PostgreSQL 23514 = check_violation
+  if (error?.code === '23514' || error?.message?.includes('violates check constraint')) {
+    if (error?.message?.includes('pecas_preco_check')) {
+      const customErr = new Error('Operação recusada pelo banco de dados: O preço unitário da peça não pode ser menor que zero.');
+      customErr.isPriceConstraint = true;
+      customErr.code = '23514';
+      return customErr;
+    }
 
-  if (isCheckViolation) {
-    const customErr = new Error('Operação recusada pelo banco de dados: A quantidade solicitada excede o saldo físico disponível em estoque.');
-    customErr.isStockConstraint = true;
+    if (error?.message?.includes('pecas_quantidade_check')) {
+      const customErr = new Error('Operação recusada pelo banco de dados: A quantidade solicitada excede o saldo físico disponível em estoque.');
+      customErr.isStockConstraint = true;
+      customErr.code = '23514';
+      return customErr;
+    }
+
+    const customErr = new Error('Operação recusada pelo banco de dados: Violação de regra de integridade.');
     customErr.code = '23514';
     return customErr;
   }
@@ -43,13 +51,21 @@ function handleDatabaseError(error, customContext = '') {
     return customErr;
   }
 
-  // Código 42703 = undefined_column (ex: trigger buscando coluna updated_at inexistente)
+  // Código 42703 = undefined_column (ex: coluna updated_at ou preco inexistente)
   if (
     error?.code === '42703' || 
     error?.message?.includes('record "new" has no field') || 
     error?.message?.includes('update_at') ||
-    error?.message?.includes('updated_at')
+    error?.message?.includes('updated_at') ||
+    error?.message?.includes('preco')
   ) {
+    if (error?.message?.includes('preco') || error?.message?.includes('"preco"')) {
+      const customErr = new Error('A tabela no Supabase não possui a coluna "preco". Execute o script add_preco_column.sql no SQL Editor do Supabase.');
+      customErr.code = '42703';
+      customErr.isSchemaError = true;
+      return customErr;
+    }
+
     const customErr = new Error('A tabela no Supabase não possui a coluna "updated_at", mas há um trigger tentando atualizá-la. Execute o script fix_updated_at.sql no SQL Editor do Supabase.');
     customErr.code = '42703';
     customErr.isSchemaError = true;
@@ -73,7 +89,7 @@ export async function listarPecas() {
 
   const { data, error } = await supabase
     .from('pecas')
-    .select('id, codigo, descricao, quantidade, created_at')
+    .select('id, codigo, descricao, quantidade, preco, created_at')
     .order('descricao', { ascending: true });
 
   if (error) {
@@ -85,14 +101,15 @@ export async function listarPecas() {
 
 /**
  * CREATE: Cadastra uma nova peça automotiva
- * Permite definir a quantidade inicial de estoque (mínimo 0).
+ * Permite definir quantidade inicial e preço unitário.
  * @param {Object} param0 
  * @param {string} param0.codigo
  * @param {string} param0.descricao
  * @param {number} [param0.quantidade=0]
+ * @param {number|string} [param0.preco=0]
  * @returns {Promise<Object>}
  */
-export async function cadastrarPeca({ codigo, descricao, quantidade = 0 }) {
+export async function cadastrarPeca({ codigo, descricao, quantidade = 0, preco = 0 }) {
   const supabase = ensureClient();
 
   if (!codigo || !descricao) {
@@ -104,10 +121,20 @@ export async function cadastrarPeca({ codigo, descricao, quantidade = 0 }) {
     throw new Error('A quantidade inicial deve ser um número inteiro maior ou igual a zero.');
   }
 
+  let parsedPreco = 0;
+  if (preco !== undefined && preco !== null && preco !== '') {
+    parsedPreco = typeof preco === 'number' ? preco : parseFloat(String(preco).replace(',', '.'));
+  }
+  if (isNaN(parsedPreco) || parsedPreco < 0) {
+    throw new Error('O preço unitário deve ser um número maior ou igual a zero.');
+  }
+  parsedPreco = Number(parsedPreco.toFixed(2));
+
   const novaPeca = {
     codigo: codigo.trim().toUpperCase(),
     descricao: descricao.trim(),
-    quantidade: qtd
+    quantidade: qtd,
+    preco: parsedPreco
   };
 
   const { data, error } = await supabase
@@ -256,15 +283,16 @@ export async function darBaixa(id, quantidadeSubtrair) {
 }
 
 /**
- * UPDATE (CRUD COMPLETO): Atualiza os dados cadastrais da peça (código, descrição e quantidade)
+ * UPDATE (CRUD COMPLETO): Atualiza os dados cadastrais da peça (código, descrição, quantidade e preço)
  * @param {string} id UUID da peça
  * @param {Object} dados
  * @param {string} dados.codigo
  * @param {string} dados.descricao
  * @param {number} dados.quantidade
+ * @param {number|string} [dados.preco=0]
  * @returns {Promise<Object>}
  */
-export async function atualizarPeca(id, { codigo, descricao, quantidade }) {
+export async function atualizarPeca(id, { codigo, descricao, quantidade, preco }) {
   const supabase = ensureClient();
 
   if (!id) throw new Error('ID da peça é obrigatório para atualização.');
@@ -277,10 +305,20 @@ export async function atualizarPeca(id, { codigo, descricao, quantidade }) {
     throw new Error('A quantidade deve ser um número inteiro maior ou igual a zero.');
   }
 
+  let parsedPreco = 0;
+  if (preco !== undefined && preco !== null && preco !== '') {
+    parsedPreco = typeof preco === 'number' ? preco : parseFloat(String(preco).replace(',', '.'));
+  }
+  if (isNaN(parsedPreco) || parsedPreco < 0) {
+    throw new Error('O preço unitário deve ser um número maior ou igual a zero.');
+  }
+  parsedPreco = Number(parsedPreco.toFixed(2));
+
   const payload = {
     codigo: codigo.trim().toUpperCase(),
     descricao: descricao.trim().toUpperCase(),
-    quantidade: qtd
+    quantidade: qtd,
+    preco: parsedPreco
   };
 
   const { data, error } = await supabase

@@ -11,17 +11,32 @@ CREATE TABLE IF NOT EXISTS public.pecas (
     codigo VARCHAR(50) NOT NULL UNIQUE,
     descricao VARCHAR(255) NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 0,
+    preco NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
 
-    -- REGRA DE NEGÓCIO CRÍTICA ENFORÇADA NO POSTGRESQL:
-    -- O saldo de estoque físico nunca pode ser menor que zero.
-    CONSTRAINT pecas_quantidade_check CHECK (quantidade >= 0)
+    -- REGRAS DE NEGÓCIO CRÍTICAS ENFORÇADAS NO POSTGRESQL:
+    -- 1. O saldo de estoque físico nunca pode ser menor que zero.
+    -- 2. O preço unitário da peça nunca pode ser negativo.
+    CONSTRAINT pecas_quantidade_check CHECK (quantidade >= 0),
+    CONSTRAINT pecas_preco_check CHECK (preco >= 0)
 );
 
--- Garante que a coluna updated_at existe caso a tabela já tenha sido criada anteriormente
+-- Garante que as colunas updated_at e preco existem caso a tabela já tenha sido criada anteriormente
 ALTER TABLE public.pecas 
 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+
+ALTER TABLE public.pecas 
+ADD COLUMN IF NOT EXISTS preco NUMERIC(10,2) NOT NULL DEFAULT 0.00;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'pecas_preco_check'
+    ) THEN
+        ALTER TABLE public.pecas ADD CONSTRAINT pecas_preco_check CHECK (preco >= 0);
+    END IF;
+END $$;
 
 -- 2. TRIGGER PARA ATUALIZAÇÃO AUTOMÁTICA DE updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
@@ -108,18 +123,18 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 6. DADOS INICIAIS DE TESTE (CATÁLOGO AUTOMOTIVO REALISTA)
-INSERT INTO public.pecas (codigo, descricao, quantidade) VALUES
-    ('FL-0144', 'Filtro de Óleo Fram PH5949 (Linha GM/Fiat 1.0-1.8)', 24),
-    ('PF-2088', 'Jogo Pastilhas Freio Dianteiro Bosch Cerâmica (HB20 / Creta)', 12),
-    ('VI-3012', 'Jogo de Velas de Ignição NGK Laser Iridium (Civic / Corolla)', 8),
-    ('CD-5501', 'Correia Dentada Continental Contitech CT1044 (VW Gol/Fox)', 15),
-    ('AM-9020', 'Amortecedor Dianteiro Pressurizado Monroe OESpectrum (Renegade)', 4),
-    ('DF-1102', 'Par Discos de Freio Ventilados Fremax Dianteiro (Onix 1.0 Turbo)', 6),
-    ('FB-0045', 'Fluido de Freio DOT 4 Bosch 500ml', 30),
-    ('FA-8812', 'Filtro de Ar do Motor Mahle LX3418 (Compass 2.0 Flex)', 0),
-    ('BP-4430', 'Bomba de Combustível Eletroeletrônica Bosch 3.5 Bar (Universal)', 3),
-    ('BL-7701', 'Bieleta da Barra Estabilizadora Dianteira Nakata (Palio / Uno)', 0)
-ON CONFLICT (codigo) DO NOTHING;
+INSERT INTO public.pecas (codigo, descricao, quantidade, preco) VALUES
+    ('FL-0144', 'Filtro de Óleo Fram PH5949 (Linha GM/Fiat 1.0-1.8)', 24, 38.50),
+    ('PF-2088', 'Jogo Pastilhas Freio Dianteiro Bosch Cerâmica (HB20 / Creta)', 12, 149.90),
+    ('VI-3012', 'Jogo de Velas de Ignição NGK Laser Iridium (Civic / Corolla)', 8, 280.00),
+    ('CD-5501', 'Correia Dentada Continental Contitech CT1044 (VW Gol/Fox)', 15, 85.00),
+    ('AM-9020', 'Amortecedor Dianteiro Pressurizado Monroe OESpectrum (Renegade)', 4, 450.00),
+    ('DF-1102', 'Par Discos de Freio Ventilados Fremax Dianteiro (Onix 1.0 Turbo)', 6, 320.00),
+    ('FB-0045', 'Fluido de Freio DOT 4 Bosch 500ml', 30, 32.00),
+    ('FA-8812', 'Filtro de Ar do Motor Mahle LX3418 (Compass 2.0 Flex)', 0, 58.00),
+    ('BP-4430', 'Bomba de Combustível Eletroeletrônica Bosch 3.5 Bar (Universal)', 3, 210.00),
+    ('BL-7701', 'Bieleta da Barra Estabilizadora Dianteira Nakata (Palio / Uno)', 0, 48.00)
+ON CONFLICT (codigo) DO UPDATE SET preco = EXCLUDED.preco;
 
 -- 7. USUÁRIOS E AUTENTICAÇÃO (SUPABASE AUTH)
 -- Os usuários ficam armazenados no esquema seguro "auth.users" gerenciado pelo Supabase.

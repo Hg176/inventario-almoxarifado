@@ -97,6 +97,9 @@ function getTableHandlers() {
     onBaixa: (peca) => {
       ui.openMovementModal(peca, 'baixa');
     },
+    onEdit: (peca) => {
+      ui.openEditPartModal(peca);
+    },
     onDelete: async (peca) => {
       const confirmMsg = `Deseja realmente remover a peça "${peca.codigo} - ${peca.descricao}" do almoxarifado?`;
       if (confirm(confirmMsg)) {
@@ -356,6 +359,16 @@ function setupEventListeners() {
     });
   });
 
+  // Chips de Preço Unitário no Cadastro
+  const newPartPriceInput = document.getElementById('newPartPrice');
+  document.querySelectorAll('.new-part-price-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (!newPartPriceInput) return;
+      const val = parseFloat(chip.dataset.val);
+      newPartPriceInput.value = isNaN(val) ? '0.00' : val.toFixed(2);
+    });
+  });
+
   // Envio do Formulário de Nova Peça
   const formNewPart = document.getElementById('formNewPart');
   if (formNewPart) {
@@ -364,13 +377,14 @@ function setupEventListeners() {
       const codigo = document.getElementById('newPartCode').value.trim().toUpperCase();
       const descricao = document.getElementById('newPartDesc').value.trim().toUpperCase();
       const quantidade = newPartQtyInput ? (parseInt(newPartQtyInput.value, 10) || 0) : 0;
+      const preco = newPartPriceInput ? (parseFloat(newPartPriceInput.value.replace(',', '.')) || 0) : 0;
 
       try {
-        const novaPeca = await api.cadastrarPeca({ codigo, descricao, quantidade });
+        const novaPeca = await api.cadastrarPeca({ codigo, descricao, quantidade, preco });
         ui.showToast({
           type: 'success',
           title: 'Peça Cadastrada no Almoxarifado',
-          message: `${novaPeca.codigo} adicionada com estoque inicial de ${novaPeca.quantidade} un.`
+          message: `${novaPeca.codigo} adicionada (Estoque: ${novaPeca.quantidade} un., Preço: ${ui.formatCurrency(novaPeca.preco)}).`
         });
         ui.closeNewPartModal();
 
@@ -384,6 +398,114 @@ function setupEventListeners() {
         ui.showToast({
           type: 'error',
           title: 'Erro no Cadastro',
+          message: err.message
+        });
+      }
+    });
+  }
+
+  // ==============================================================================
+  // Modal: Editar Peça
+  // ==============================================================================
+  const btnCloseEditPart = document.getElementById('btnCloseEditPartModal');
+  const btnCancelEditPart = document.getElementById('btnCancelEditPart');
+  [btnCloseEditPart, btnCancelEditPart].forEach(btn => {
+    if (btn) btn.addEventListener('click', () => ui.closeEditPartModal());
+  });
+
+  const editPartDescInput = document.getElementById('editPartDesc');
+  if (editPartDescInput) {
+    editPartDescInput.addEventListener('input', () => {
+      editPartDescInput.value = editPartDescInput.value.toUpperCase();
+    });
+  }
+
+  document.querySelectorAll('.edit-desc-chip, .edit-app-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (!editPartDescInput) return;
+      const text = (chip.dataset.text || chip.textContent.trim()).toUpperCase();
+      const current = editPartDescInput.value.trim().toUpperCase();
+      if (!current) {
+        editPartDescInput.value = text;
+      } else {
+        if (!current.includes(text)) {
+          editPartDescInput.value = `${current} - ${text}`;
+        }
+      }
+      editPartDescInput.value = editPartDescInput.value.toUpperCase();
+      editPartDescInput.focus();
+    });
+  });
+
+  // Stepper e Chips de Quantidade na Edição
+  const editPartQtyInput = document.getElementById('editPartQty');
+  const btnDecEditQty = document.getElementById('btnDecEditQty');
+  const btnIncEditQty = document.getElementById('btnIncEditQty');
+
+  if (btnDecEditQty && editPartQtyInput) {
+    btnDecEditQty.addEventListener('click', () => {
+      const current = parseInt(editPartQtyInput.value, 10) || 0;
+      editPartQtyInput.value = Math.max(0, current - 1);
+    });
+  }
+
+  if (btnIncEditQty && editPartQtyInput) {
+    btnIncEditQty.addEventListener('click', () => {
+      const current = parseInt(editPartQtyInput.value, 10) || 0;
+      editPartQtyInput.value = current + 1;
+    });
+  }
+
+  document.querySelectorAll('.edit-part-qty-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (!editPartQtyInput) return;
+      const val = parseInt(chip.dataset.val, 10);
+      editPartQtyInput.value = isNaN(val) ? 0 : Math.max(0, val);
+    });
+  });
+
+  // Chips de Preço na Edição
+  const editPartPriceInput = document.getElementById('editPartPrice');
+  document.querySelectorAll('.edit-part-price-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (!editPartPriceInput) return;
+      const val = parseFloat(chip.dataset.val);
+      editPartPriceInput.value = isNaN(val) ? '0.00' : val.toFixed(2);
+    });
+  });
+
+  // Envio do Formulário de Edição
+  const formEditPart = document.getElementById('formEditPart');
+  if (formEditPart) {
+    formEditPart.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editPartId').value;
+      const codigo = document.getElementById('editPartCode').value.trim().toUpperCase();
+      const descricao = document.getElementById('editPartDesc').value.trim().toUpperCase();
+      const quantidade = editPartQtyInput ? (parseInt(editPartQtyInput.value, 10) || 0) : 0;
+      const preco = editPartPriceInput ? (parseFloat(editPartPriceInput.value.replace(',', '.')) || 0) : 0;
+
+      try {
+        const pecaAtualizada = await api.atualizarPeca(id, { codigo, descricao, quantidade, preco });
+        ui.showToast({
+          type: 'success',
+          title: 'Peça Atualizada',
+          message: `${pecaAtualizada.codigo} atualizada com sucesso.`
+        });
+        ui.closeEditPartModal();
+
+        // Atualiza na lista local e UI
+        const idx = pecasList.findIndex(p => p.id === pecaAtualizada.id);
+        const prev = idx !== -1 ? pecasList[idx] : null;
+        if (idx !== -1) {
+          pecasList[idx] = pecaAtualizada;
+        }
+        ui.updateTableRowRealtime(pecaAtualizada, prev, getTableHandlers());
+        ui.updateMetrics(pecasList);
+      } catch (err) {
+        ui.showToast({
+          type: 'error',
+          title: 'Erro ao Atualizar Peça',
           message: err.message
         });
       }
