@@ -1146,3 +1146,24 @@
     width: 100%;
   }
 }
+
+/* ==============================================================================
+   CORREÇÃO: ROLAGEM DOS MODAIS COM FORMULÁRIO
+   O <form> fica entre .modal-container e .modal-body; sem isso ele não encolhe,
+   a área de rolagem nunca aparece e o final do modal (campos e botões) é cortado.
+   ============================================================================== */
+.modal-container > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.modal-footer {
+  flex-shrink: 0;
+}
