@@ -76,6 +76,24 @@ const elements = {
   movementQuickChips: document.querySelectorAll('.quick-chip'),
   movementPriceGroup: document.getElementById('movementPriceGroup'),
   movementNewPrice: document.getElementById('movementNewPrice'),
+  movementBaixaFields: document.getElementById('movementBaixaFields'),
+  movementCliente: document.getElementById('movementCliente'),
+  movementPlaca: document.getElementById('movementPlaca'),
+  movementVeiculo: document.getElementById('movementVeiculo'),
+  movementObservacao: document.getElementById('movementObservacao'),
+
+  // Modal Histórico
+  modalHistory: document.getElementById('modalHistory'),
+  historyTableBody: document.getElementById('historyTableBody'),
+  historyEmptyState: document.getElementById('historyEmptyState'),
+  historyCount: document.getElementById('historyCount'),
+  btnHistoryMore: document.getElementById('btnHistoryMore'),
+  historyPartFilter: document.getElementById('historyPartFilter'),
+  historyPartFilterLabel: document.getElementById('historyPartFilterLabel'),
+  historySearch: document.getElementById('historySearch'),
+  historyTipo: document.getElementById('historyTipo'),
+  historyFrom: document.getElementById('historyFrom'),
+  historyTo: document.getElementById('historyTo'),
   
   // Modal Configurações Supabase
   modalConfig: document.getElementById('modalConfig'),
@@ -222,6 +240,14 @@ function createTableRow(peca, handlers = {}) {
           Editar
         </button>
 
+        <button class="btn btn-action-history" title="Histórico da Peça" aria-label="Histórico da peça" data-action="historico">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+            <polyline points="3 3 3 8 8 8"></polyline>
+            <polyline points="12 7 12 12 15 14"></polyline>
+          </svg>
+        </button>
+
         <button class="btn btn-action-delete" title="Excluir Peça" data-action="delete">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
@@ -237,6 +263,7 @@ function createTableRow(peca, handlers = {}) {
   const btnBaixa = tr.querySelector('[data-action="baixa"]');
   const btnEdit = tr.querySelector('[data-action="edit"]');
   const btnDelete = tr.querySelector('[data-action="delete"]');
+  const btnHistorico = tr.querySelector('[data-action="historico"]');
   const priceBadge = tr.querySelector('.price-badge');
 
   if (priceBadge && handlers.onEdit) {
@@ -250,6 +277,9 @@ function createTableRow(peca, handlers = {}) {
   }
   if (btnEdit && handlers.onEdit) {
     btnEdit.addEventListener('click', () => handlers.onEdit(peca));
+  }
+  if (btnHistorico && handlers.onHistorico) {
+    btnHistorico.addEventListener('click', () => handlers.onHistorico(peca));
   }
   if (btnDelete && handlers.onDelete) {
     btnDelete.addEventListener('click', () => handlers.onDelete(peca));
@@ -446,6 +476,20 @@ export function openMovementModal(arg1, arg2) {
     elements.movementNewPrice.value = p > 0 ? p.toFixed(2).replace('.', ',') : '';
   }
 
+  if (elements.movementBaixaFields) {
+    elements.movementBaixaFields.style.display = isEntrada ? 'none' : 'flex';
+  }
+  [elements.movementCliente, elements.movementPlaca, elements.movementVeiculo, elements.movementObservacao]
+    .forEach(input => {
+      if (input) {
+        input.value = '';
+        input.classList.remove('field-error');
+      }
+    });
+  if (elements.movementCliente) {
+    elements.movementCliente.required = !isEntrada;
+  }
+
   elements.movementAmountInput.value = 1;
   elements.movementConfirmBtn.className = `btn ${isEntrada ? 'btn-action-entrada' : 'btn-action-baixa'}`;
   elements.movementConfirmBtn.textContent = isEntrada ? 'Confirmar Entrada' : 'Confirmar Baixa';
@@ -503,8 +547,149 @@ export function getCurrentMovementContext() {
   return {
     item: currentMovementItem,
     type: currentMovementType,
-    amount: parseInt(elements.movementAmountInput.value, 10) || 0
+    amount: parseInt(elements.movementAmountInput.value, 10) || 0,
+    cliente: (elements.movementCliente?.value || '').trim(),
+    placa: normalizePlaca(elements.movementPlaca?.value || ''),
+    veiculo: (elements.movementVeiculo?.value || '').trim(),
+    observacao: (elements.movementObservacao?.value || '').trim()
   };
+}
+
+/**
+ * Marca o campo de cliente como obrigatório não preenchido
+ */
+export function flagMissingCliente() {
+  if (!elements.movementCliente) return;
+  elements.movementCliente.classList.add('field-error');
+  elements.movementCliente.focus();
+}
+
+/**
+ * Placa em maiúsculas, sem espaços/traços (ABC-1D23 -> ABC1D23)
+ * @param {string} value
+ * @returns {string}
+ */
+export function normalizePlaca(value) {
+  return (value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+// ==============================================================================
+// 6.1 MODAL DE HISTÓRICO DE MOVIMENTAÇÕES
+// ==============================================================================
+const TIPO_LABEL = {
+  ENTRADA: 'Entrada',
+  BAIXA: 'Baixa',
+  AJUSTE: 'Ajuste',
+  CADASTRO: 'Cadastro',
+  EXCLUSAO: 'Exclusão'
+};
+
+const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+});
+
+export function formatDateTime(value) {
+  const d = new Date(value);
+  return isNaN(d) ? '---' : dateTimeFormatter.format(d).replace(',', '');
+}
+
+export function openHistoryModal(peca = null) {
+  setHistoryPart(peca);
+  if (elements.historyTableBody) elements.historyTableBody.innerHTML = '';
+  if (elements.historyCount) elements.historyCount.textContent = 'Carregando...';
+  elements.modalHistory?.classList.add('active');
+}
+
+export function closeHistoryModal() {
+  elements.modalHistory?.classList.remove('active');
+}
+
+export function setHistoryPart(peca) {
+  if (!elements.historyPartFilter) return;
+  if (peca) {
+    elements.historyPartFilterLabel.textContent = `${peca.codigo} - ${(peca.descricao || '').toUpperCase()}`;
+    elements.historyPartFilter.style.display = 'flex';
+  } else {
+    elements.historyPartFilter.style.display = 'none';
+  }
+}
+
+export function getHistoryFilters() {
+  return {
+    busca: (elements.historySearch?.value || '').trim(),
+    tipo: elements.historyTipo?.value || '',
+    de: elements.historyFrom?.value || '',
+    ate: elements.historyTo?.value || ''
+  };
+}
+
+export function setHistoryLoading(loading) {
+  if (elements.btnHistoryMore) {
+    elements.btnHistoryMore.disabled = loading;
+    elements.btnHistoryMore.textContent = loading ? 'Carregando...' : 'Carregar mais';
+  }
+}
+
+/**
+ * Renderiza linhas do histórico
+ * @param {Array} registros
+ * @param {{ append?: boolean, total?: number, carregados?: number }} opts
+ */
+export function renderHistory(registros, { append = false, total = 0, carregados = 0 } = {}) {
+  const tbody = elements.historyTableBody;
+  if (!tbody) return;
+  if (!append) tbody.innerHTML = '';
+
+  registros.forEach(mov => tbody.appendChild(createHistoryRow(mov)));
+
+  const vazio = carregados === 0;
+  elements.historyEmptyState?.classList.toggle('hidden', !vazio);
+
+  if (elements.historyCount) {
+    elements.historyCount.textContent = vazio
+      ? ''
+      : `Exibindo ${carregados} de ${total} movimentaç${total === 1 ? 'ão' : 'ões'}`;
+  }
+  if (elements.btnHistoryMore) {
+    elements.btnHistoryMore.style.display = carregados < total ? 'inline-flex' : 'none';
+  }
+}
+
+function createHistoryRow(mov) {
+  const tr = document.createElement('tr');
+  const delta = (mov.saldo_posterior ?? 0) - (mov.saldo_anterior ?? 0);
+  const sinal = delta > 0 ? '+' : (delta < 0 ? '−' : '');
+  const qtdClass = delta > 0 ? 'pos' : (delta < 0 ? 'neg' : '');
+
+  let destino = mov.observacao ? '' : '<span class="history-sub">—</span>';
+  if (mov.cliente_nome || mov.veiculo_placa || mov.veiculo_descricao) {
+    destino = `
+      ${mov.cliente_nome ? `<strong>${escapeHtml(mov.cliente_nome)}</strong>` : ''}
+      ${(mov.veiculo_placa || mov.veiculo_descricao) ? `<span class="history-sub">
+        ${mov.veiculo_placa ? `<span class="history-placa">${escapeHtml(mov.veiculo_placa)}</span>` : ''}${escapeHtml(mov.veiculo_descricao || '')}
+      </span>` : ''}`;
+  }
+  if (mov.observacao) {
+    destino += `<span class="history-sub" title="Observação">Obs.: ${escapeHtml(mov.observacao)}</span>`;
+  }
+
+  tr.innerHTML = `
+    <td class="history-when" data-label="Data">${formatDateTime(mov.created_at)}</td>
+    <td data-label="Tipo"><span class="tipo-badge tipo-${escapeHtml(mov.tipo)}">${TIPO_LABEL[mov.tipo] || escapeHtml(mov.tipo)}</span></td>
+    <td data-label="Peça" class="history-peca">
+      <span class="code-badge">${escapeHtml(mov.peca_codigo)}</span>
+      <span class="history-sub">${escapeHtml((mov.peca_descricao || '').toUpperCase())}</span>
+    </td>
+    <td class="col-center" data-label="Qtd."><span class="history-qty ${qtdClass}">${sinal}${mov.quantidade}</span></td>
+    <td class="col-center" data-label="Saldo"><span class="history-saldo">${mov.saldo_anterior} → ${mov.saldo_posterior}</span></td>
+    <td data-label="Cliente / Veículo" class="history-destino">${destino}</td>
+    <td data-label="Operador">${mov.usuario_email ? escapeHtml(mov.usuario_email) : '<span class="history-sub">Painel Supabase</span>'}</td>
+  `;
+  return tr;
 }
 
 // ==============================================================================
