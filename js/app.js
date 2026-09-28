@@ -2,10 +2,10 @@
 // PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (app.js)
 // ORQUESTRAÇÃO DE AUTENTICAÇÃO, SUPABASE REALTIME E CRUD
 // ==============================================================================
-import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js?v=1.3.0';
-import * as auth from './auth.js?v=1.3.0';
-import * as api from './api.js?v=1.3.0';
-import * as ui from './ui.js?v=1.3.0';
+import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js?v=1.3.1';
+import * as auth from './auth.js?v=1.3.1';
+import * as api from './api.js?v=1.3.1';
+import * as ui from './ui.js?v=1.3.1';
 
 // Cache em memória das peças sincronizadas com o banco
 let pecasList = [];
