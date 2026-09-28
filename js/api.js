@@ -23,6 +23,19 @@ function ensureClient() {
 function handleDatabaseError(error, customContext = '') {
   console.error('[Supabase DB Error]:', error);
 
+  // Migração do histórico ainda não aplicada (função ou tabela inexistente na API)
+  if (
+    error?.code === 'PGRST202' ||
+    error?.code === 'PGRST205' ||
+    error?.code === '42P01' ||
+    (error?.code === '42883' && error?.message?.includes('registrar_movimentacao'))
+  ) {
+    const customErr = new Error('O histórico de movimentações ainda não foi instalado no banco. Execute o script migrations/001_historico_movimentacoes.sql no SQL Editor do Supabase.');
+    customErr.code = error.code;
+    customErr.isSchemaError = true;
+    return customErr;
+  }
+
   // REGRA CRÍTICA: Código PostgreSQL 23514 = check_violation
   if (error?.code === '23514' || error?.message?.includes('violates check constraint')) {
     if (error?.message?.includes('pecas_preco_check')) {
@@ -168,149 +181,164 @@ export async function cadastrarPeca({ codigo, descricao, quantidade = 0, preco =
 }
 
 /**
- * UPDATE (ENTRADA): Registra entrada de estoque
- * Envia a alteração diretamente ao Supabase, permitindo opcionalmente atualizar o preço unitário.
- * @param {string} id UUID da peça
- * @param {number} quantidadeAdicionar Valor a somar (> 0)
- * @param {number|string|null} [novoPreco=null] Novo preço unitário se ajustado nesta entrada
- * @returns {Promise<Object>}
+ * Converte preço digitado (pt-BR ou en) em número com 2 casas. Retorna null se vazio/ inválido.
+ * @param {number|string|null} valor
+ * @returns {number|null}
  */
-export async function darEntrada(id, quantidadeAdicionar, novoPreco = null) {
+function parsePrecoOpcional(valor) {
+  if (valor === null || valor === undefined || valor === '') return null;
+  let parsed;
+  if (typeof valor === 'number') {
+    parsed = valor;
+  } else {
+    let str = String(valor).trim().replace(/[R$\s]/g, '');
+    if (str.includes(',') && str.includes('.')) {
+      str = str.replace(/\./g, '').replace(',', '.');
+    } else if (str.includes(',')) {
+      str = str.replace(',', '.');
+    }
+    parsed = parseFloat(str);
+  }
+  if (isNaN(parsed) || parsed < 0) return null;
+  return Number(parsed.toFixed(2));
+}
+
+function textoOuNull(valor) {
+  const t = (valor ?? '').toString().trim();
+  return t === '' ? null : t;
+}
+
+/**
+ * MOVIMENTAÇÃO AUDITADA (ENTRADA / BAIXA)
+ * Chama a função registrar_movimentacao no PostgreSQL, que:
+ *  - soma/subtrai o saldo numa única instrução (seguro entre terminais)
+ *  - grava o histórico com operador (lido do login, no servidor), data/hora,
+ *    cliente, placa e veículo
+ *  - continua respeitando a constraint pecas_quantidade_check (erro 23514)
+ * Requer a migração migrations/001_historico_movimentacoes.sql aplicada.
+ * @param {string} id UUID da peça
+ * @param {'ENTRADA'|'BAIXA'} tipo
+ * @param {number} quantidade Valor positivo
+ * @param {Object} [dados]
+ * @returns {Promise<Object>} Peça atualizada
+ */
+export async function registrarMovimentacao(id, tipo, quantidade, dados = {}) {
   const supabase = ensureClient();
-  const qtd = parseInt(quantidadeAdicionar, 10);
+  const qtd = parseInt(quantidade, 10);
 
   if (isNaN(qtd) || qtd <= 0) {
-    throw new Error('Informe uma quantidade válida superior a zero para dar entrada.');
+    throw new Error('Informe uma quantidade válida superior a zero.');
   }
 
-  // Se NÃO estiver alterando o preço, tenta executar via RPC atômico
-  const hasPriceChange = novoPreco !== null && novoPreco !== undefined && novoPreco !== '';
-  if (!hasPriceChange) {
-    const { data: rpcData, error: rpcError } = await supabase.rpc('movimentar_estoque', {
-      p_id: id,
-      p_quantidade: qtd
-    });
-
-    if (!rpcError && rpcData) {
-      return rpcData;
-    }
-  }
-  const { data: pecaAtual, error: fetchError } = await supabase
-    .from('pecas')
-    .select('quantidade, preco')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    throw handleDatabaseError(fetchError, 'consultar saldo para entrada');
+  const cliente = textoOuNull(dados.cliente);
+  if (tipo === 'BAIXA' && !cliente) {
+    throw new Error('Informe o nome do cliente para registrar a baixa.');
   }
 
-  const novoSaldo = (pecaAtual.quantidade || 0) + qtd;
-  const updatePayload = { quantidade: novoSaldo };
+  const payload = {
+    p_peca_id: id,
+    p_tipo: tipo,
+    p_quantidade: qtd,
+    p_cliente_nome: tipo === 'BAIXA' ? cliente : null,
+    p_veiculo_placa: tipo === 'BAIXA' ? textoOuNull(dados.placa) : null,
+    p_veiculo_descricao: tipo === 'BAIXA' ? textoOuNull(dados.veiculo) : null,
+    p_observacao: textoOuNull(dados.observacao),
+    p_novo_preco: tipo === 'ENTRADA' ? parsePrecoOpcional(dados.novoPreco) : null
+  };
 
-  if (novoPreco !== null && novoPreco !== undefined && novoPreco !== '') {
-    let parsedPreco = 0;
-    if (typeof novoPreco === 'number') {
-      parsedPreco = novoPreco;
-    } else {
-      let str = String(novoPreco).trim().replace(/[R$\s]/g, '');
-      if (str.includes(',') && str.includes('.')) {
-        str = str.replace(/\./g, '').replace(',', '.');
-      } else if (str.includes(',')) {
-        str = str.replace(',', '.');
-      }
-      parsedPreco = parseFloat(str);
-    }
-    if (!isNaN(parsedPreco) && parsedPreco >= 0) {
-      updatePayload.preco = Number(parsedPreco.toFixed(2));
-    }
-  }
-
-  console.log('[Supabase API] Enviando entrada de estoque:', id, updatePayload);
-
-  const { data, error } = await supabase
-    .from('pecas')
-    .update(updatePayload)
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('registrar_movimentacao', payload);
 
   if (error) {
-    console.error('[Supabase API] Erro na entrada:', error);
-    throw handleDatabaseError(error, 'efetuar entrada de estoque');
+    throw handleDatabaseError(error, tipo === 'BAIXA' ? 'efetuar baixa de estoque' : 'efetuar entrada de estoque');
   }
 
-  console.log('[Supabase API] Entrada de estoque concluída:', data);
   return data;
 }
 
 /**
- * UPDATE (BAIXA): Registra baixa de estoque
- * A validação principal ocorre no PostgreSQL através da constraint:
- * CONSTRAINT pecas_quantidade_check CHECK (quantidade >= 0)
- * O frontend envia a transação ao banco e intercepta o erro 23514 do PostgreSQL.
+ * UPDATE (ENTRADA): Registra entrada de estoque com histórico
  * @param {string} id UUID da peça
- * @param {number} quantidadeSubtrair Valor a subtrair (> 0)
+ * @param {number} quantidadeAdicionar Valor a somar (> 0)
+ * @param {number|string|null} [novoPreco=null] Novo preço unitário se ajustado nesta entrada
+ * @param {string|null} [observacao=null]
  * @returns {Promise<Object>}
  */
-export async function darBaixa(id, quantidadeSubtrair) {
+export async function darEntrada(id, quantidadeAdicionar, novoPreco = null, observacao = null) {
+  return registrarMovimentacao(id, 'ENTRADA', quantidadeAdicionar, { novoPreco, observacao });
+}
+
+/**
+ * UPDATE (BAIXA): Registra baixa de estoque com destino (cliente / placa / veículo)
+ * Se a quantidade exceder o saldo, o PostgreSQL recusa com erro 23514.
+ * @param {string} id UUID da peça
+ * @param {number} quantidadeSubtrair Valor a subtrair (> 0)
+ * @param {{cliente: string, placa?: string, veiculo?: string, observacao?: string}} destino
+ * @returns {Promise<Object>}
+ */
+export async function darBaixa(id, quantidadeSubtrair, destino = {}) {
+  return registrarMovimentacao(id, 'BAIXA', quantidadeSubtrair, destino);
+}
+
+/**
+ * READ: Consulta o histórico de movimentações (mais recentes primeiro)
+ * @param {Object} filtros
+ * @param {string} [filtros.pecaId]
+ * @param {string} [filtros.tipo] ENTRADA | BAIXA | AJUSTE | CADASTRO | EXCLUSAO
+ * @param {string} [filtros.busca] Cliente, placa, veículo, código, descrição ou operador
+ * @param {string} [filtros.de] Data inicial (YYYY-MM-DD, horário local)
+ * @param {string} [filtros.ate] Data final (YYYY-MM-DD, inclusiva, horário local)
+ * @param {number} [filtros.limite=50]
+ * @param {number} [filtros.offset=0]
+ * @returns {Promise<{ registros: Array, total: number }>}
+ */
+export async function listarMovimentacoes({ pecaId, tipo, busca, de, ate, limite = 50, offset = 0 } = {}) {
   const supabase = ensureClient();
-  const qtd = parseInt(quantidadeSubtrair, 10);
 
-  if (isNaN(qtd) || qtd <= 0) {
-    throw new Error('Informe uma quantidade válida superior a zero para dar baixa.');
+  let query = supabase
+    .from('movimentacoes')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(offset, offset + limite - 1);
+
+  if (pecaId) query = query.eq('peca_id', pecaId);
+  if (tipo) query = query.eq('tipo', tipo);
+
+  if (de) {
+    const inicio = new Date(`${de}T00:00:00`);
+    if (!isNaN(inicio)) query = query.gte('created_at', inicio.toISOString());
   }
-
-  // Tenta executar via RPC atômico que dispara o check constraint
-  const { data: rpcData, error: rpcError } = await supabase.rpc('movimentar_estoque', {
-    p_id: id,
-    p_quantidade: -qtd
-  });
-
-  if (!rpcError && rpcData) {
-    return rpcData;
-  }
-
-  // Se o RPC retornou erro de regra de negócio (23514) ou erro de schema/trigger (42703),
-  // dispara o erro imediatamente sem tentar fallback desnecessário que falharia do mesmo modo
-  if (rpcError) {
-    if (
-      rpcError.code === '23514' || 
-      rpcError.message?.includes('pecas_quantidade_check') ||
-      rpcError.code === '42703' || 
-      rpcError.message?.includes('record "new" has no field') || 
-      rpcError.message?.includes('updated_at')
-    ) {
-      throw handleDatabaseError(rpcError, 'efetuar baixa de estoque');
+  if (ate) {
+    const fim = new Date(`${ate}T00:00:00`);
+    if (!isNaN(fim)) {
+      fim.setDate(fim.getDate() + 1);
+      query = query.lt('created_at', fim.toISOString());
     }
   }
 
-  // Fallback direto na tabela via SDK Supabase
-  const { data: pecaAtual, error: fetchError } = await supabase
-    .from('pecas')
-    .select('quantidade')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    throw handleDatabaseError(fetchError, 'consultar saldo para baixa');
+  // Remove caracteres que quebram a sintaxe do filtro "or" do PostgREST
+  const termo = (busca || '').replace(/[,()*%\\:"]/g, ' ').trim();
+  if (termo) {
+    const placa = termo.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const condicoes = [
+      `cliente_nome.ilike."*${termo}*"`,
+      `veiculo_descricao.ilike."*${termo}*"`,
+      `peca_codigo.ilike."*${termo}*"`,
+      `peca_descricao.ilike."*${termo}*"`,
+      `usuario_email.ilike."*${termo}*"`,
+      `observacao.ilike."*${termo}*"`
+    ];
+    if (placa) condicoes.push(`veiculo_placa.ilike."*${placa}*"`);
+    query = query.or(condicoes.join(','));
   }
 
-  const novoSaldo = (pecaAtual.quantidade || 0) - qtd;
-
-  // Enviamos o novoSaldo ao PostgreSQL. Se novoSaldo < 0, o PostgreSQL dispara o erro 23514
-  const { data, error } = await supabase
-    .from('pecas')
-    .update({ quantidade: novoSaldo })
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error, count } = await query;
 
   if (error) {
-    throw handleDatabaseError(error, 'efetuar baixa de estoque');
+    throw handleDatabaseError(error, 'consultar histórico de movimentações');
   }
 
-  return data;
+  return { registros: data || [], total: count ?? (data || []).length };
 }
 
 /**

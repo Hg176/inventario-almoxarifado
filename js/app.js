@@ -2,13 +2,22 @@
 // PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (app.js)
 // ORQUESTRAÇÃO DE AUTENTICAÇÃO, SUPABASE REALTIME E CRUD
 // ==============================================================================
-import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js?v=1.2.0';
-import * as auth from './auth.js?v=1.2.0';
-import * as api from './api.js?v=1.2.0';
-import * as ui from './ui.js?v=1.2.0';
+import { isSupabaseConfigured, saveSupabaseConfig, getStoredConfig } from './config.js?v=1.3.0';
+import * as auth from './auth.js?v=1.3.0';
+import * as api from './api.js?v=1.3.0';
+import * as ui from './ui.js?v=1.3.0';
 
 // Cache em memória das peças sincronizadas com o banco
 let pecasList = [];
+
+// Estado da tela de histórico
+const HISTORICO_PAGINA = 50;
+const historicoState = {
+  peca: null,
+  registros: [],
+  total: 0,
+  requisicao: 0
+};
 
 // ==============================================================================
 // 1. INICIALIZAÇÃO DA APLICAÇÃO
@@ -67,6 +76,7 @@ async function handleAuthenticatedUser(user) {
  */
 function handleUserSignedOut() {
   api.desinscreverRealtime();
+  ui.closeHistoryModal();
   pecasList = [];
   ui.showLoginView();
 }
@@ -100,8 +110,11 @@ function getTableHandlers() {
     onEdit: (peca) => {
       ui.openEditPartModal(peca);
     },
+    onHistorico: (peca) => {
+      abrirHistorico(peca);
+    },
     onDelete: async (peca) => {
-      const confirmMsg = `Deseja realmente remover a peça "${peca.codigo} - ${peca.descricao}" do almoxarifado?`;
+      const confirmMsg = `Deseja realmente remover a peça "${peca.codigo} - ${peca.descricao}" do almoxarifado?\n\nO histórico de movimentações desta peça será mantido.`;
       if (confirm(confirmMsg)) {
         try {
           await api.excluirPeca(peca.id);
@@ -124,6 +137,57 @@ function getTableHandlers() {
       }
     }
   };
+}
+
+// ==============================================================================
+// 2.1 HISTÓRICO DE MOVIMENTAÇÕES
+// ==============================================================================
+function abrirHistorico(peca = null) {
+  historicoState.peca = peca;
+  ui.openHistoryModal(peca);
+  carregarHistorico();
+}
+
+/**
+ * Busca o histórico com os filtros atuais.
+ * @param {boolean} append true = "Carregar mais" (próxima página)
+ */
+async function carregarHistorico(append = false) {
+  const requisicao = ++historicoState.requisicao;
+  const filtros = ui.getHistoryFilters();
+  const offset = append ? historicoState.registros.length : 0;
+
+  ui.setHistoryLoading(true);
+  try {
+    const { registros, total } = await api.listarMovimentacoes({
+      ...filtros,
+      pecaId: historicoState.peca?.id,
+      limite: HISTORICO_PAGINA,
+      offset
+    });
+
+    // Ignora respostas antigas se o usuário mudou o filtro nesse meio tempo
+    if (requisicao !== historicoState.requisicao) return;
+
+    historicoState.registros = append ? historicoState.registros.concat(registros) : registros;
+    historicoState.total = total;
+    ui.renderHistory(registros, {
+      append,
+      total,
+      carregados: historicoState.registros.length
+    });
+  } catch (err) {
+    if (requisicao !== historicoState.requisicao) return;
+    ui.renderHistory([], { total: 0, carregados: 0 });
+    ui.showToast({
+      type: 'error',
+      title: 'Falha ao Carregar Histórico',
+      message: err.message,
+      duration: err.isSchemaError ? 9000 : 6000
+    });
+  } finally {
+    if (requisicao === historicoState.requisicao) ui.setHistoryLoading(false);
+  }
 }
 
 // ==============================================================================
@@ -565,8 +629,18 @@ function setupEventListeners() {
   if (formMovement) {
     formMovement.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { item, type, amount } = ui.getCurrentMovementContext();
+      const { item, type, amount, cliente, placa, veiculo, observacao } = ui.getCurrentMovementContext();
       if (!item) return;
+
+      if (type !== 'entrada' && !cliente) {
+        ui.flagMissingCliente();
+        ui.showToast({
+          type: 'error',
+          title: 'Cliente Obrigatório',
+          message: 'Informe o nome do cliente para registrar a baixa.'
+        });
+        return;
+      }
 
       const confirmBtn = document.getElementById('movementConfirmBtn');
       const originalText = confirmBtn.textContent;
@@ -580,7 +654,7 @@ function setupEventListeners() {
           if (movementNewPriceInput && movementNewPriceInput.value.trim() !== '') {
             novoPreco = ui.parseCurrencyInput(movementNewPriceInput.value);
           }
-          const updated = await api.darEntrada(item.id, amount, novoPreco);
+          const updated = await api.darEntrada(item.id, amount, novoPreco, observacao);
           const priceMsg = novoPreco !== null ? ` (Preço: ${ui.formatCurrency(updated.preco)})` : '';
           ui.showToast({
             type: 'success',
@@ -599,11 +673,12 @@ function setupEventListeners() {
           // REGRA CRÍTICA: Baixa de estoque
           // A validação principal ocorre no PostgreSQL através da constraint CHECK (quantidade >= 0).
           // Se falhar, o PostgreSQL retorna erro 23514 e o api.js o traduz para nós.
-          const updated = await api.darBaixa(item.id, amount);
+          const updated = await api.darBaixa(item.id, amount, { cliente, placa, veiculo, observacao });
+          const destino = [cliente, placa, veiculo].filter(Boolean).join(' · ');
           ui.showToast({
             type: 'warning',
             title: 'Baixa Confirmada',
-            message: `-${amount} unidades registradas para ${item.codigo}. Novo saldo: ${updated.quantidade} un.`
+            message: `-${amount} unidades de ${item.codigo} para ${destino}. Novo saldo: ${updated.quantidade} un.`
           });
           ui.closeMovementModal();
 
@@ -629,6 +704,55 @@ function setupEventListeners() {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
       }
+    });
+  }
+
+  // Campos de destino da baixa
+  const movementCliente = document.getElementById('movementCliente');
+  if (movementCliente) {
+    movementCliente.addEventListener('input', () => movementCliente.classList.remove('field-error'));
+  }
+  const movementPlaca = document.getElementById('movementPlaca');
+  if (movementPlaca) {
+    movementPlaca.addEventListener('input', () => {
+      const pos = movementPlaca.selectionStart;
+      movementPlaca.value = movementPlaca.value.toUpperCase();
+      movementPlaca.setSelectionRange(pos, pos);
+    });
+  }
+
+  // Modal: Histórico de Movimentações
+  const btnOpenHistory = document.getElementById('btnOpenHistory');
+  if (btnOpenHistory) btnOpenHistory.addEventListener('click', () => abrirHistorico(null));
+
+  const btnCloseHistory = document.getElementById('btnCloseHistoryModal');
+  if (btnCloseHistory) btnCloseHistory.addEventListener('click', () => ui.closeHistoryModal());
+
+  const btnClearHistoryPart = document.getElementById('btnClearHistoryPart');
+  if (btnClearHistoryPart) {
+    btnClearHistoryPart.addEventListener('click', () => {
+      historicoState.peca = null;
+      ui.setHistoryPart(null);
+      carregarHistorico();
+    });
+  }
+
+  const btnHistoryMore = document.getElementById('btnHistoryMore');
+  if (btnHistoryMore) btnHistoryMore.addEventListener('click', () => carregarHistorico(true));
+
+  const historyFilters = document.getElementById('historyFilters');
+  if (historyFilters) {
+    let debounce = null;
+    historyFilters.addEventListener('submit', (e) => {
+      e.preventDefault();
+      carregarHistorico();
+    });
+    document.getElementById('historySearch')?.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => carregarHistorico(), 350);
+    });
+    ['historyTipo', 'historyFrom', 'historyTo'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => carregarHistorico());
     });
   }
 

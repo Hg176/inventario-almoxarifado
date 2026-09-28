@@ -14,6 +14,9 @@ Inventario Pontual/
 ├── schema.sql              # Script DDL PostgreSQL (Tabela pecas, CHECK constraints, RLS e Realtime)
 ├── add_preco_column.sql    # Script de migração para adicionar campo preco e constraint em bancos existentes
 ├── fix_updated_at.sql      # Script de correção de coluna/trigger updated_at
+├── migrations/
+│   ├── 001_historico_movimentacoes.sql           # Histórico de movimentações (auditoria)
+│   └── 001_historico_movimentacoes_reverter.sql  # Desfaz a migração 001
 ├── README.md               # Documentação técnica de uso e implantação
 ├── css/
 │   ├── variables.css      # Design tokens (paleta automotiva clean light, tipografia, elevações)
@@ -91,3 +94,24 @@ Utilize a extensão **Live Server** clicando com o botão direito no `index.html
 4. **Sincronização em Tempo Real (Supabase Realtime)**:
    - A tabela escuta eventos de `INSERT`, `UPDATE` e `DELETE` via `postgres_changes`.
    - Quando um operador no Terminal A efetua uma baixa, o Terminal B atualiza a quantidade imediatamente na linha correspondente com uma animação de pulso luminoso, sem recarregar a página.
+
+5. **Histórico de Movimentações (Auditoria)** — requer `migrations/001_historico_movimentacoes.sql`:
+   - Toda alteração de saldo é registrada na tabela `movimentacoes` por um trigger no PostgreSQL: **quem** (e-mail do operador, lido do login no servidor), **quando**, quantidade e saldo antes/depois.
+   - **Baixa** exige o **nome do cliente**; **placa** e **veículo** são opcionais. Entradas e baixas aceitam uma **observação** (OS, fornecedor, nota fiscal).
+   - Tipos registrados: `ENTRADA`, `BAIXA`, `AJUSTE` (saldo alterado pela tela de edição), `CADASTRO` e `EXCLUSAO`. O histórico de uma peça excluída é mantido.
+   - O histórico é somente leitura pela API: operadores podem consultar, mas ninguém consegue alterar ou apagar registros pelo app.
+   - Consulta pelo botão **Histórico** (geral) ou pelo ícone de relógio em cada peça, com busca por cliente, placa, veículo, código ou operador, filtro por tipo e por período.
+
+---
+
+## 🚚 Publicando a versão 1.3.0 (Histórico de Movimentações) em produção
+
+A migração **só adiciona** objetos novos (tabela, trigger e função). Nenhuma peça ou saldo existente é alterado.
+
+1. **Backup:** no painel do Supabase, abra *Table Editor → pecas → Export → CSV*.
+2. **Ensaio sem gravar:** no *SQL Editor*, rode `migrations/001_historico_movimentacoes.sql` exatamente como está (ele termina com `ROLLBACK;`). Se terminar sem erro, nada foi gravado e o script é compatível com o banco.
+3. **Aplicar:** troque a última linha `ROLLBACK;` por `COMMIT;` e rode de novo.
+4. **Publicar o frontend** (arquivos desta versão). O site antigo continua funcionando entre os passos 3 e 4; as movimentações feitas nele aparecem no histórico como `AJUSTE`.
+5. **Conferir:** faça uma baixa de 1 unidade numa peça de teste e abra o **Histórico**.
+
+Para voltar atrás: publique o frontend anterior e rode `migrations/001_historico_movimentacoes_reverter.sql` (preserva o histórico já gravado por padrão).

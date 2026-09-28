@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Almoxarifado Pontual | Controle de Peças Automotivas</title>
-  <link rel="stylesheet" href="./css/variables.css">
-  <link rel="stylesheet" href="./css/main.css">
-  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/variables.css?v=1.3.0">
+  <link rel="stylesheet" href="./css/main.css?v=1.3.0">
+  <link rel="stylesheet" href="./css/components.css?v=1.3.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'><path d='M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z'/></svg>">
 </head>
 <body>
@@ -234,6 +234,15 @@
               <option value="baixo">Estoque Baixo (1 - 5)</option>
               <option value="zerado">Estoque Zerado (0)</option>
             </select>
+
+            <button id="btnOpenHistory" class="btn btn-secondary" title="Histórico de movimentações">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+                <polyline points="3 3 3 8 8 8"></polyline>
+                <polyline points="12 7 12 12 15 14"></polyline>
+              </svg>
+              Histórico
+            </button>
 
             <button id="btnOpenNewPartModal" class="btn btn-primary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -605,6 +614,46 @@
             <span id="movementTotalValue" class="preview-val" style="color: var(--text-primary); font-size: 1.05rem;">R$ 0,00</span>
           </div>
 
+          <!-- Destino da Baixa (visível apenas na Baixa) -->
+          <div id="movementBaixaFields" class="movement-destino" style="display: none;">
+            <span class="item-label">Destino da Peça</span>
+            <div class="form-group">
+              <label for="movementCliente" class="form-label">Nome do Cliente <span class="required-mark">*</span></label>
+              <input
+                type="text"
+                id="movementCliente"
+                class="form-input"
+                maxlength="150"
+                autocomplete="off"
+                placeholder="Ex: João da Silva"
+              >
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="movementPlaca" class="form-label">Placa <span class="optional-mark">(opcional)</span></label>
+                <input
+                  type="text"
+                  id="movementPlaca"
+                  class="form-input input-placa"
+                  maxlength="8"
+                  autocomplete="off"
+                  placeholder="ABC1D23"
+                >
+              </div>
+              <div class="form-group">
+                <label for="movementVeiculo" class="form-label">Veículo <span class="optional-mark">(opcional)</span></label>
+                <input
+                  type="text"
+                  id="movementVeiculo"
+                  class="form-input"
+                  maxlength="150"
+                  autocomplete="off"
+                  placeholder="Ex: Onix 2020"
+                >
+              </div>
+            </div>
+          </div>
+
           <!-- Atualizar Preço Unitário Opcional (visível apenas na Entrada) -->
           <div id="movementPriceGroup" class="form-group" style="display: none; margin-top: 0.75rem;">
             <label for="movementNewPrice" class="form-label">
@@ -618,9 +667,22 @@
                 inputmode="decimal" 
                 id="movementNewPrice" 
                 class="form-input price-input" 
-                placeholder="0,00" 
+                placeholder="0,00"
               >
             </div>
+          </div>
+
+          <!-- Observação (Entrada e Baixa) -->
+          <div class="form-group">
+            <label for="movementObservacao" class="form-label">Observação <span class="optional-mark">(opcional)</span></label>
+            <input
+              type="text"
+              id="movementObservacao"
+              class="form-input"
+              maxlength="500"
+              autocomplete="off"
+              placeholder="Ex: nº da OS, fornecedor, nota fiscal..."
+            >
           </div>
         </div>
 
@@ -629,6 +691,90 @@
           <button type="submit" id="movementConfirmBtn" class="btn btn-primary">Confirmar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: HISTÓRICO DE MOVIMENTAÇÕES
+       ======================================================================== -->
+  <div id="modalHistory" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalHistoryTitle">
+    <div class="modal-container modal-wide">
+      <div class="modal-header">
+        <h3 id="modalHistoryTitle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+            <polyline points="3 3 3 8 8 8"></polyline>
+            <polyline points="12 7 12 12 15 14"></polyline>
+          </svg>
+          Histórico de Movimentações
+        </h3>
+        <button id="btnCloseHistoryModal" class="modal-close-btn" aria-label="Fechar histórico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body history-body">
+        <!-- Filtro por peça (quando aberto a partir de uma linha da tabela) -->
+        <div id="historyPartFilter" class="history-part-filter" style="display: none;">
+          <span>Peça: <strong id="historyPartFilterLabel">---</strong></span>
+          <button type="button" id="btnClearHistoryPart" class="text-btn">Ver todas as peças</button>
+        </div>
+
+        <form id="historyFilters" class="history-filters">
+          <input
+            type="text"
+            id="historySearch"
+            class="form-input"
+            placeholder="Cliente, placa, veículo, código ou operador..."
+            autocomplete="off"
+          >
+          <select id="historyTipo" class="form-input">
+            <option value="">Todos os tipos</option>
+            <option value="BAIXA">Baixas</option>
+            <option value="ENTRADA">Entradas</option>
+            <option value="AJUSTE">Ajustes (edição)</option>
+            <option value="CADASTRO">Cadastros</option>
+            <option value="EXCLUSAO">Exclusões</option>
+          </select>
+          <label class="history-date">
+            <span>De</span>
+            <input type="date" id="historyFrom" class="form-input">
+          </label>
+          <label class="history-date">
+            <span>Até</span>
+            <input type="date" id="historyTo" class="form-input">
+          </label>
+        </form>
+
+        <div class="table-responsive history-table-wrap">
+          <table class="inventory-table history-table">
+            <thead>
+              <tr>
+                <th>Data / Hora</th>
+                <th>Tipo</th>
+                <th>Peça</th>
+                <th class="col-center" style="text-align: center;">Qtd.</th>
+                <th class="col-center" style="text-align: center;">Saldo</th>
+                <th>Cliente / Veículo</th>
+                <th>Operador</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+          <div id="historyEmptyState" class="table-empty-state hidden">
+            <p style="font-weight: 600;">Nenhuma movimentação encontrada</p>
+            <p style="font-size: 0.85rem; margin-top: 0.25rem;">Ajuste os filtros ou o período.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer history-footer">
+        <span id="historyCount" class="history-count"></span>
+        <button type="button" id="btnHistoryMore" class="btn btn-secondary" style="display: none;">Carregar mais</button>
+      </div>
     </div>
   </div>
 
@@ -695,6 +841,6 @@
   </div>
 
   <!-- Script Principal Modular (ES6) com Cache Busting -->
-  <script type="module" src="./js/app.js?v=1.2.0"></script>
+  <script type="module" src="./js/app.js?v=1.3.0"></script>
 </body>
 </html>
